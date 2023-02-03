@@ -14,7 +14,7 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
        372.736])
 
 
-def load_nom(rpath = '/data/ivar/solo/step/v0008/',period = (dt.datetime(2021,10,22),dt.datetime(2021,10,23)), products = ('M','A'), heads = (0,1), pixels = range(16)):
+def load_nom(rpath = '/data/projects/solo/step_v0008/',period = (dt.datetime(2021,10,22),dt.datetime(2021,10,23)), products = ('M','A'), heads = (0,1), pixels = range(16)):
     dat = {}
     time = {}
     prods = []

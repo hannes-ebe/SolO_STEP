@@ -25,7 +25,7 @@ def cut_data(dat,time,t0,t1):
         cdat[p] = dat[p][m] 
     return ctime, cdat
         
-def plot_ts(idat,itime,ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False):
+def plot_ts(idat,itime,ebins=ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False):
     if period:
         time,dat = cut_data(idat,itime,period[0]-dt.timedelta(seconds=59),period[1])
     else:
@@ -250,7 +250,7 @@ def plot_ts(idat,itime,ebins,res = '1min', head = 0, period = None, save = False
             #plt.savefig('TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
 
 
-def plot_ts_nativ(dat,time,ebins,head = 0, save = False, norm = False, single = True):
+def plot_ts_nativ(dat,time,ebins=ebins,head = 0, save = False, norm = False, single = True):
     if norm == 'tmax':
         vmax = np.zeros(time['STEP_C_%i_00'%(head)].shape)
         for i in range(16):
@@ -319,7 +319,7 @@ def plot_ts_nativ(dat,time,ebins,head = 0, save = False, norm = False, single = 
             plt.savefig('TS_%i-%i_H%i_%s.png'%(time['STEP_C_%i_%.2i'%(head,i)][0].day, time['STEP_C_%i_%.2i'%(head,i)][-1].day,head,norm))
             
 
-def plot_ts_diff(dat,time,ebins, save = False, single = True, bint = False):
+def plot_ts_diff(dat,time,ebins=ebins, save = False, single = True, bint = False):
     vmax = 0
     vmin = 0
     diffdat = np.zeros((16,dat['STEP_C_0_00'].shape[0],dat['STEP_C_0_00'].shape[1]))
@@ -396,7 +396,7 @@ def plot_ts_diff(dat,time,ebins, save = False, single = True, bint = False):
 
 
             
-def plot_sumspec(dat,time,ebins,head = 0, save = False,single = False):
+def plot_sumspec(dat,time,ebins=ebins,head = 0, save = False,single = False):
     maxv = 0 
     for i in range(16):
         if np.amax(dat['STEP_C_%i_%.2i'%(head,i)].sum(axis=0)) > maxv:

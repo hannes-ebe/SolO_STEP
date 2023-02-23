@@ -361,7 +361,9 @@ def plot_ts_diff(dat,time,ebins=ebins, save = False, single = True, bint = False
             ax.hlines(ebins[8],difft[i][0],difft[i][-1]+dt.timedelta(seconds=max(60,bint)))
             ax.hlines(ebins[40],difft[i][0],difft[i][-1]+dt.timedelta(seconds=max(60,bint)))
             ax.set_title('Pixel %i'%i)
-            if save:
+            if type(save) == str:
+                plt.savefig(save + 'DIFFTS_%i-%i_P%i.png'%(difft[i][0].day, difft[i][-1].day,i))
+            else:
                 plt.savefig('DIFFTS_%i-%i_P%i.png'%(difft[i][0].day, difft[i][-1].day,i))
     else:
         fig = plt.figure(figsize = (15,10))
@@ -391,7 +393,9 @@ def plot_ts_diff(dat,time,ebins=ebins, save = False, single = True, bint = False
                 ax.set_xlabel('Date')
             if i == 6:
                 ax.set_ylabel('Energy [keV]')
-        if save:
+        if type(save) == str:
+            plt.savefig(save + 'diff/DIFFTS_%i-%i_all.png'%(difft[i][0].day, difft[i][-1].day))
+        else:
             plt.savefig('DIFFTS_%i-%i_all.png'%(difft[i][0].day, difft[i][-1].day))
 
 

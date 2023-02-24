@@ -49,16 +49,16 @@ def plot(year,month,day,lastofmonth=False):
 #         plot(y,mon,i,lastofmonth=True)
 
 # Dezember 2021
-for i in range(31,32):
-    mon = 12
-    y = 2021
-    if i != 31:
-        plot(y,mon,i)
-    else:
-        plot(y,mon,i,lastofmonth=True)
+# for i in range(31,32):
+#     mon = 12
+#     y = 2021
+#     if i != 31:
+#         plot(y,mon,i)
+#     else:
+#         plot(y,mon,i,lastofmonth=True)
 
 # Januar 2022
-for i in range(1,32):
+for i in range(23,32):
     mon = 1
     y = 2022
     if i != 31:

@@ -13,7 +13,7 @@ def plot(year,month,day,lastofmonth=False):
         if month!=12:
             time, data = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year,month+1,1)), products=('M','A'))
         else:
-            time, data = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year,1,1)), products=('M','A'))
+            time, data = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year+1,1,1)), products=('M','A'))
     else:
         time, data = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)), products=('M','A'))
     print('Data loaded successfully.')
@@ -26,6 +26,7 @@ def plot(year,month,day,lastofmonth=False):
     pt.plot_ts(data, time, head=0, save='plots/')
     pt.plot_ts(data, time, head=1, save='plots/')
     pt.plot_ts_diff(data,time, save='plots/', single=False)
+    plt.close('all')
     print('Data plotted successfully.')
     
     
@@ -39,16 +40,16 @@ def plot(year,month,day,lastofmonth=False):
 #         plot(y,mon,i,lastofmonth=True)
         
 # November 2021
-for i in range(1,31):
-    mon = 11
-    y = 2021
-    if i != 30:
-        plot(y,mon,i)
-    else:
-        plot(y,mon,i,lastofmonth=True)
+# for i in range(1,31):
+#     mon = 11
+#     y = 2021
+#     if i != 30:
+#         plot(y,mon,i)
+#     else:
+#         plot(y,mon,i,lastofmonth=True)
 
 # Dezember 2021
-for i in range(1,32):
+for i in range(31,32):
     mon = 12
     y = 2021
     if i != 31:

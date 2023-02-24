@@ -49,7 +49,11 @@ def plot(year,month,day,lastofmonth=False):
 #         plot(y,mon,i,lastofmonth=True)
 
 # Dezember 2021
+<<<<<<< HEAD
 # for i in range(31,32):
+=======
+# for i in range(1,32):
+>>>>>>> db4029b930801492d4ce6b72fe47534927df0c7d
 #     mon = 12
 #     y = 2021
 #     if i != 31:
@@ -58,7 +62,12 @@ def plot(year,month,day,lastofmonth=False):
 #         plot(y,mon,i,lastofmonth=True)
 
 # Januar 2022
+<<<<<<< HEAD
 for i in range(23,32):
+=======
+# 10/01/22 und 11/01/22 wollen anscheinend nicht...
+for i in range(12,32):
+>>>>>>> db4029b930801492d4ce6b72fe47534927df0c7d
     mon = 1
     y = 2022
     if i != 31:

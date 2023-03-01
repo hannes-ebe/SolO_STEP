@@ -249,22 +249,42 @@ class STEP:
                     elif norm == 'emax':
                         plt.colorbar(tmp,cax = tax, label = 'C(E)/max(C(E)')
 
-                ax[i].hlines(ebins[8],ptime[0],ptime[-1])
-                ax[i].hlines(ebins[40],ptime[0],ptime[-1])
                 if i == 0:
                     tl = [l.get_text() for l in ax[i].get_xticklabels()]
                     ax[i].set_title('Head %i'%head)
                 ax[i].text(0.05,0.05,'%i'%(i),transform=ax[i].transAxes,color = 'k', backgroundcolor = 'w', fontsize = 6)
                 if i == 0:
+                    ax[i].hlines(ebins[8],ptime[0],ptime[-1])
+                    ax[i].hlines(ebins[40],ptime[0],ptime[-1])
                     ax[i].tick_params(axis='x',labelrotation=90)
                     ax[i].set_xlabel('Date')
                     ax[i].set_ylabel('Energy [keV]')
 
-        if i == 1:        
-            ax.append(fig.add_subplot(3,1,i))
+                if i == 1 or i == 2:
+                    if norm == 'tmax':
+                        ax[i].set_ylabel('Counts(t)/max(Counts(t)')
+                    elif norm == 'ptmax':
+                        ax[i].set_ylabel('Counts(t)/max(Counts(t)')
+                    elif norm == 'max':
+                        ax[i].set_ylabel('Counts')
+                    elif norm == 'logmax':
+                        ax[i].set_ylabel('Log10(C)')
+                    elif norm == 'pemax':
+                        ax[i].set_ylabel('C(E,pixel)/max(C(E,pixel)')
+                    elif norm == 'emax':
+                        ax[i].set_ylabel('C(E)/max(C(E)')
         
-        if i == 2:
-            ax.append(fig.add_subplot(3,1,i))
+
+        # To Do...
+
+        # if i == 1:      
+        #     # Projektion auf Energie-Achse  
+        #     ax.append(fig.add_subplot(3,1,i))
+        #     ax[-1].hist()
+        
+        # if i == 2:
+        #     # Projektion auf Zeit-Achse
+        #     ax.append(fig.add_subplot(3,1,i))
 
         if period:
             ax[0].set_xlim(period[0],period[1])

@@ -235,7 +235,7 @@ class STEP:
                     
                     
                 if (norm and i == 0): # or not norm:
-                    tax = fig.add_subplot(4,50,41)
+                    tax = fig.add_subplot(4,50,50)
                     if norm == 'tmax':
                         plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t)')
                     elif norm == 'ptmax':
@@ -277,14 +277,14 @@ class STEP:
 
         # To Do...
 
-        # if i == 1:      
-        #     # Projektion auf Energie-Achse  
-        #     ax.append(fig.add_subplot(3,1,i))
+        if i == 1:      
+            # Projektion auf Energie-Achse  
+            ax.append(fig.add_subplot(3,1,i))
         #     ax[-1].hist()
         
-        # if i == 2:
-        #     # Projektion auf Zeit-Achse
-        #     ax.append(fig.add_subplot(3,1,i))
+        if i == 2:
+            # Projektion auf Zeit-Achse
+            ax.append(fig.add_subplot(3,1,i))
 
         if period:
             ax[0].set_xlim(period[0],period[1])

@@ -142,7 +142,7 @@ class STEP:
 
         pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
 
-        fig = plt.figure(figsize = (8,12))
+        fig = plt.figure(figsize = (8,15))
         ax = []
         for i in range(3):
             if i == 0:
@@ -256,7 +256,7 @@ class STEP:
                 if i == 0:
                     ax[i].hlines(ebins[8],ptime[0],ptime[-1])
                     ax[i].hlines(ebins[40],ptime[0],ptime[-1])
-                    ax[i].tick_params(axis='x',labelrotation=90)
+                    ax[i].tick_params(axis='x',labelrotation=45)
                     ax[i].set_xlabel('Date')
                     ax[i].set_ylabel('Energy [keV]')
 
@@ -276,15 +276,17 @@ class STEP:
         
 
         # To Do...
+        # Wie sieht Struktur von pdat aus??? Wie genau mache ich die Histogramme??? 
 
         if i == 1:      
             # Projektion auf Energie-Achse  
             ax.append(fig.add_subplot(3,1,i))
-        #     ax[-1].hist()
+            ax[-1].hist(np.sum(pdat.T)/len(pdat.T),bins=ebins)
         
         if i == 2:
             # Projektion auf Zeit-Achse
             ax.append(fig.add_subplot(3,1,i))
+            ax[-1].hist(np.sum(pdat)/len(pdat),bins=ptime)
 
         if period:
             ax[0].set_xlim(period[0],period[1])

@@ -46,16 +46,16 @@ class STEP:
         for p in self.idata.keys():
             m = (self.itime[p]>=t0) * (self.itime[p]<t1)
             ctime[p] = self.itime[p][m] 
-            cdat[p] = self.idat[p][m] 
+            cdat[p] = self.idata[p][m] 
         return ctime, cdat
 
     def data_prep(self,ebins=ebins,res = '1min', head = 0, period = None, norm = False, overflow = True, esquare = False):
         '''Vorbereitung der STEP-Daten basierend auf Lars Skripten.'''
 
         if period:
-            time,dat = self.cut_data(self.idat,self.itime,period[0]-dt.timedelta(seconds=59),period[1])
+            time,dat = self.cut_data(self.idata,self.itime,period[0]-dt.timedelta(seconds=59),period[1])
         else:
-            time,dat = self.itime, self.idat
+            time,dat = self.itime, self.idata
         pldat = []
         pltime = []
         if type(res) == dt.timedelta:

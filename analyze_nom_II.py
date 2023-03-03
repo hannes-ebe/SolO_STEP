@@ -140,7 +140,7 @@ class STEP:
     def marginal_distribution(self,ebins=ebins,res = '1min', head = 0, pixel = 0, period = None, save = False, norm = False, overflow = True, esquare = False):
         '''Plot des Histogramms eines einzelnen Pixels und der Projektionen auf Zeit- und Energieachse'''
 
-        pldat, pltime, vmax = self.data_prep(self,ebins,res,head,period,norm,overflow,esquare)
+        pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
 
         fig = plt.figure(figsize = (8,10))
         ax = []

@@ -145,7 +145,7 @@ class STEP:
         fig = plt.figure(figsize = (8,10))
         ax = []
         for i in range(3):
-            if pixel == 0:
+            if i == 0:
                 pdat = pldat[pixel]
                 ptime = np.append(pltime[pixel],pltime[pixel][-1]+dt.timedelta(seconds=60))
                 ax.append(fig.add_subplot(3,1,1))

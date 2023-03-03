@@ -142,7 +142,7 @@ class STEP:
 
         pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
 
-        fig = plt.figure(figsize = (8,10))
+        fig = plt.figure(figsize = (8,12))
         ax = []
         for i in range(3):
             if i == 0:
@@ -235,7 +235,7 @@ class STEP:
                     
                     
                 if (norm and i == 0): # or not norm:
-                    tax = fig.add_subplot(4,50,31)
+                    tax = fig.add_subplot(4,50,41)
                     if norm == 'tmax':
                         plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t)')
                     elif norm == 'ptmax':
@@ -295,3 +295,4 @@ class STEP:
             else:
                 plt.savefig('TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
                 #plt.savefig('TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
+        print('Analyzed marginal distribution successfully.')

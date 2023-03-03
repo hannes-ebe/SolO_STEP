@@ -233,6 +233,19 @@ class STEP:
                     elif norm == 'emax':
                         tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
                     
+            # To Do...
+            # Wie sieht Struktur von pdat aus??? Wie genau mache ich die Histogramme??? 
+
+            if i == 1:      
+                # Projektion auf Energie-Achse  
+                ax.append(fig.add_subplot(3,1,i+1))
+                ax[-1].hist(np.sum(pdat)/len(pdat),bins=ebins)
+            
+            if i == 2:
+                # Projektion auf Zeit-Achse
+                ax.append(fig.add_subplot(3,1,i+1))
+                ax[-1].hist(np.sum(pdat.T)/len(pdat.T),bins=ptime)
+                
                     
             if (norm and i == 0): # or not norm:
                 tax = fig.add_subplot(4,50,50)
@@ -259,19 +272,6 @@ class STEP:
                 ax[i].tick_params(axis='x',labelrotation=45)
                 ax[i].set_xlabel('Date')
                 ax[i].set_ylabel('Energy [keV]')
-
-            # To Do...
-            # Wie sieht Struktur von pdat aus??? Wie genau mache ich die Histogramme??? 
-
-            if i == 1:      
-                # Projektion auf Energie-Achse  
-                ax.append(fig.add_subplot(3,1,i+1))
-                ax[-1].hist(np.sum(pdat)/len(pdat),bins=ebins)
-            
-            if i == 2:
-                # Projektion auf Zeit-Achse
-                ax.append(fig.add_subplot(3,1,i+1))
-                ax[-1].hist(np.sum(pdat.T)/len(pdat.T),bins=ptime)
 
             if i == 1 or i == 2:
                 if norm == 'tmax':

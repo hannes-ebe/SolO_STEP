@@ -275,18 +275,18 @@ class STEP:
                         ax[i].set_ylabel('C(E)/max(C(E)')
         
 
-        # To Do...
-        # Wie sieht Struktur von pdat aus??? Wie genau mache ich die Histogramme??? 
+            # To Do...
+            # Wie sieht Struktur von pdat aus??? Wie genau mache ich die Histogramme??? 
 
-        if i == 1:      
-            # Projektion auf Energie-Achse  
-            ax.append(fig.add_subplot(3,1,i))
-            ax[-1].hist(np.sum(pdat.T)/len(pdat.T),bins=ebins)
-        
-        if i == 2:
-            # Projektion auf Zeit-Achse
-            ax.append(fig.add_subplot(3,1,i))
-            ax[-1].hist(np.sum(pdat)/len(pdat),bins=ptime)
+            if i == 1:      
+                # Projektion auf Energie-Achse  
+                ax.append(fig.add_subplot(3,1,i))
+                ax[-1].hist(np.sum(pdat)/len(pdat),bins=ebins)
+            
+            if i == 2:
+                # Projektion auf Zeit-Achse
+                ax.append(fig.add_subplot(3,1,i))
+                ax[-1].hist(np.sum(pdat.T)/len(pdat.T),bins=ptime)
 
         if period:
             ax[0].set_xlim(period[0],period[1])

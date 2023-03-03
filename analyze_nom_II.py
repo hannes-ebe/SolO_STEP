@@ -29,15 +29,15 @@ class STEP:
         # Loading data
         if lastofmonth:
             if month!=12:
-                itime, idata = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year,month+1,1)), products=('M','A'))
+                self.itime, self.idata = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year,month+1,1)), products=('M','A'))
             else:
-                itime, idata = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year+1,1,1)), products=('M','A'))
+                self.itime, self.idata = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year+1,1,1)), products=('M','A'))
         else:
-            itime, idata = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)), products=('M','A'))
+            self.itime, self.idata = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)), products=('M','A'))
         print('Data loaded successfully.')
         
         # Combining data (Main and Auxiliary Product)
-        ld.combine_data(itime, idata)
+        ld.combine_data(self.itime, self.idata)
         print('Data combined successfully.')
 
     def cut_data(self,t0,t1):

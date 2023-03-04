@@ -247,15 +247,15 @@ class STEP:
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
                 ax[-1].set_xscale('log')
-                print(np.sum(pdat))
-                ax[-1].hist(np.sum(pdat),bins=ebins)
+                print(np.sum(pdat,axis=0))
+                ax[-1].hist(np.sum(pdat,axis=0),bins=ebins)
             
             if i == 2:
                 # Projektion auf Zeit-Achse
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
-                print(np.sum(pdat.T))
-                ax[-1].hist(np.sum(pdat.T),bins=ptime)
+                print(np.sum(pdat,axis=1))
+                ax[-1].hist(np.sum(pdat,axis=1),bins=ptime)
                 
                     
             if (norm and i == 0): # or not norm:

@@ -237,13 +237,14 @@ class STEP:
             # Wie sieht Struktur von pdat aus??? Wie genau mache ich die Histogramme??? 
             print(pldat[pixel])
             print(len(pldat[pixel][0]))
-            print(len(pldat[pixel][1]))
+            print(len(ebins))
 
             if i == 1:  
                 # Projektion auf Energie-Achse  
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
-                ax[-1].hist(np.sum(pdat.T),bins=ebins)
+                # ax[-1].hist(np.sum(pdat.T),bins=ebins)
+                ax[-1].hist(pdat[0],bins=ebins)
             
             if i == 2:
                 # Projektion auf Zeit-Achse

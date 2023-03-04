@@ -255,7 +255,7 @@ class STEP:
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
                 print(np.sum(pdat,axis=1))
-                ax[-1].sstep(ptime[1:],np.sum(pdat,axis=1),where='pre')
+                ax[-1].step(ptime[1:],np.sum(pdat,axis=1),where='pre')
                 
                     
             if (norm and i == 0): # or not norm:

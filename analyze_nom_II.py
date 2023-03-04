@@ -248,14 +248,14 @@ class STEP:
                 ax.append(fig.add_subplot(3,1,i+1))
                 ax[-1].set_xscale('log')
                 print(np.sum(pdat,axis=0))
-                ax[-1].stairs(np.sum(pdat,axis=0),edges=ebins)
+                ax[-1].step(ebins[1:],np.sum(pdat,axis=0),where='pre')
             
             if i == 2:
                 # Projektion auf Zeit-Achse
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
                 print(np.sum(pdat,axis=1))
-                ax[-1].stairs(np.sum(pdat,axis=1),edges=ptime)
+                ax[-1].sstep(ptime[1:],np.sum(pdat,axis=1),where='pre')
                 
                     
             if (norm and i == 0): # or not norm:

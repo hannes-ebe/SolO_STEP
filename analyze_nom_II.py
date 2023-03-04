@@ -235,6 +235,7 @@ class STEP:
                     
             # To Do...
             # Wie sieht Struktur von pdat aus??? Wie genau mache ich die Histogramme??? 
+            print(pldat[pixel])
 
             if i == 1:  
                 # Projektion auf Energie-Achse  

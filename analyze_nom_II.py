@@ -232,15 +232,6 @@ class STEP:
                         tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax[i]).T, cmap = cmap, vmin = np.amin(1/vmax[i])*0.99,vmax = 1.)
                     elif norm == 'emax':
                         tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
-                    
-            # To Do...
-            # Wie sieht Struktur von pdat aus??? Wie genau mache ich die Histogramme???
-            # pdat == pldat[pixel]
-            print(pldat[pixel])
-            print(len(pldat[pixel][0]))
-            print(ebins)
-            print(len(pldat[pixel].T[0]))
-            print(ptime)
 
             if i == 1:  
                 # Projektion auf Energie-Achse  
@@ -261,17 +252,17 @@ class STEP:
             if (norm and i == 0): # or not norm:
                 tax = fig.add_subplot(4,50,50)
                 if norm == 'tmax':
-                    plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t)')
+                    plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t))')
                 elif norm == 'ptmax':
-                    plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t)')
+                    plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t))')
                 elif norm == 'max':
                     plt.colorbar(tmp,cax = tax, label = 'Counts')
                 elif norm == 'logmax':
                     plt.colorbar(tmp,cax = tax, label = 'Log10(C)')
                 elif norm == 'pemax':
-                    plt.colorbar(tmp,cax = tax, label = 'C(E,pixel)/max(C(E,pixel)')
+                    plt.colorbar(tmp,cax = tax, label = 'C(E,pixel)/max(C(E,pixel))')
                 elif norm == 'emax':
-                    plt.colorbar(tmp,cax = tax, label = 'C(E)/max(C(E)')
+                    plt.colorbar(tmp,cax = tax, label = 'C(E)/max(C(E))')
 
             if i == 0:
                 tl = [l.get_text() for l in ax[i].get_xticklabels()]
@@ -280,15 +271,15 @@ class STEP:
             if i == 0:
                 ax[i].hlines(ebins[8],ptime[0],ptime[-1])
                 ax[i].hlines(ebins[40],ptime[0],ptime[-1])
-                ax[i].tick_params(axis='x',labelrotation=45)
+                ax[i].tick_params(axis='x',labelrotation=0)
                 ax[i].set_xlabel('Date')
                 ax[i].set_ylabel('Energy [keV]')
 
             if i == 1:
-                ax[i].set_ylabel('Stimmt label?')
+                ax[i].set_ylabel('sum along date axis')
                 ax[i].set_xlabel('Energy [keV]')
             if i == 2:
-                ax[i].set_ylabel('Stimmt label?')
+                ax[i].set_ylabel('sum along energy axis')
                 ax[i].set_xlabel('Date')
                 # if norm == 'tmax':
                 #     ax[i].set_ylabel('Counts(t)/max(Counts(t)')

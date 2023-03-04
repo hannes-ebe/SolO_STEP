@@ -246,7 +246,7 @@ class STEP:
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
                 ax[-1].set_xscale('log')
-                # ax[-1].hist(np.sum(pdat.T),bins=ebins)
+                print(np.sum(pdat[pixel]))
                 ax[-1].hist(np.sum(pdat[pixel]),bins=ebins)
             
             if i == 2:

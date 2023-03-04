@@ -238,9 +238,9 @@ class STEP:
             # pdat == pldat[pixel]
             print(pldat[pixel])
             print(len(pldat[pixel][0]))
-            print(len(ebins))
+            print(ebins)
             print(len(pldat[pixel].T[0]))
-            print(len(ptime))
+            print(ptime)
 
             if i == 1:  
                 # Projektion auf Energie-Achse  

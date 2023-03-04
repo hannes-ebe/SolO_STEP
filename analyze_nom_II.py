@@ -264,7 +264,7 @@ class STEP:
 
             if i == 0:
                 tl = [l.get_text() for l in ax[i].get_xticklabels()]
-                ax[i].set_title('Head %i'%head)
+                ax[i].set_title('Head %i'%head+'/pixel %i'%pixel)
             # ax[i].text(0.05,0.05,'%i'%(i),transform=ax[i].transAxes,color = 'k', backgroundcolor = 'w', fontsize = 6)
             if i == 0:
                 ax[i].hlines(ebins[8],ptime[0],ptime[-1])
@@ -276,6 +276,8 @@ class STEP:
             if i == 1:
                 ax[i].set_ylabel('sum along date axis')
                 ax[i].set_xlabel('Energy [keV]')
+                ax[i].axvline(ebins[8])
+                ax[i].axvline(ebins[40])
             if i == 2:
                 ax[i].set_ylabel('sum along energy axis')
                 ax[i].set_xlabel('Date')

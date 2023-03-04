@@ -234,7 +234,8 @@ class STEP:
                         tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
                     
             # To Do...
-            # Wie sieht Struktur von pdat aus??? Wie genau mache ich die Histogramme??? 
+            # Wie sieht Struktur von pdat aus??? Wie genau mache ich die Histogramme???
+            # pdat == pldat[pixel]
             print(pldat[pixel])
             print(len(pldat[pixel][0]))
             print(len(ebins))
@@ -246,14 +247,15 @@ class STEP:
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
                 ax[-1].set_xscale('log')
-                print(np.sum(pdat[pixel]))
-                ax[-1].hist(np.sum(pdat[pixel]),bins=ebins)
+                print(np.sum(pdat))
+                ax[-1].hist(np.sum(pdat),bins=ebins)
             
             if i == 2:
                 # Projektion auf Zeit-Achse
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
-                ax[-1].hist(np.sum(pdat),bins=ptime)
+                print(np.sum(pdat.T))
+                ax[-1].hist(np.sum(pdat.T),bins=ptime)
                 
                     
             if (norm and i == 0): # or not norm:

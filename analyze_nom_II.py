@@ -246,16 +246,16 @@ class STEP:
                 # Projektion auf Energie-Achse  
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
-                # ax[-1].set_xscale('log')
+                ax[-1].set_xscale('log')
                 print(np.sum(pdat,axis=0))
-                ax[-1].hist(np.sum(pdat,axis=0),bins=ebins)
+                ax[-1].stairs(np.sum(pdat,axis=0),edges=ebins)
             
             if i == 2:
                 # Projektion auf Zeit-Achse
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
                 print(np.sum(pdat,axis=1))
-                ax[-1].hist(np.sum(pdat,axis=1),bins=ptime)
+                ax[-1].stairs(np.sum(pdat,axis=1),edges=ptime)
                 
                     
             if (norm and i == 0): # or not norm:
@@ -284,19 +284,24 @@ class STEP:
                 ax[i].set_xlabel('Date')
                 ax[i].set_ylabel('Energy [keV]')
 
-            if i == 1 or i == 2:
-                if norm == 'tmax':
-                    ax[i].set_ylabel('Counts(t)/max(Counts(t)')
-                elif norm == 'ptmax':
-                    ax[i].set_ylabel('Counts(t)/max(Counts(t)')
-                elif norm == 'max':
-                    ax[i].set_ylabel('Counts')
-                elif norm == 'logmax':
-                    ax[i].set_ylabel('Log10(C)')
-                elif norm == 'pemax':
-                    ax[i].set_ylabel('C(E,pixel)/max(C(E,pixel)')
-                elif norm == 'emax':
-                    ax[i].set_ylabel('C(E)/max(C(E)')
+            if i == 1:
+                ax[i].set_ylabel('Stimmt label?')
+                ax[i].set_xlabel('Energy [keV]')
+            if i == 2:
+                ax[i].set_ylabel('Stimmt label?')
+                ax[i].set_xlabel('Date')
+                # if norm == 'tmax':
+                #     ax[i].set_ylabel('Counts(t)/max(Counts(t)')
+                # elif norm == 'ptmax':
+                #     ax[i].set_ylabel('Counts(t)/max(Counts(t)')
+                # elif norm == 'max':
+                #     ax[i].set_ylabel('Counts')
+                # elif norm == 'logmax':
+                #     ax[i].set_ylabel('Log10(C)')
+                # elif norm == 'pemax':
+                #     ax[i].set_ylabel('C(E,pixel)/max(C(E,pixel)')
+                # elif norm == 'emax':
+                #     ax[i].set_ylabel('C(E)/max(C(E)')
 
         if period:
             ax[0].set_xlim(period[0],period[1])

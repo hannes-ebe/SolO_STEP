@@ -238,13 +238,16 @@ class STEP:
             print(pldat[pixel])
             print(len(pldat[pixel][0]))
             print(len(ebins))
+            print(len(pldat[pixel].T[0]))
+            print(len(ptime))
 
             if i == 1:  
                 # Projektion auf Energie-Achse  
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
+                ax[-1].set_xscale('log')
                 # ax[-1].hist(np.sum(pdat.T),bins=ebins)
-                ax[-1].hist(pdat[0],bins=ebins)
+                ax[-1].hist(np.sum(pdat[pixel]),bins=ebins)
             
             if i == 2:
                 # Projektion auf Zeit-Achse

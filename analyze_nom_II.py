@@ -238,14 +238,12 @@ class STEP:
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
                 ax[-1].set_xscale('log')
-                print(np.sum(pdat,axis=0))
                 ax[-1].step(ebins[1:],np.sum(pdat,axis=0),where='pre')
             
             if i == 2:
                 # Projektion auf Zeit-Achse
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
-                print(np.sum(pdat,axis=1))
                 ax[-1].step(ptime[1:],np.sum(pdat,axis=1),where='pre')
                 
                     

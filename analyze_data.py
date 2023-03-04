@@ -18,5 +18,6 @@ dat.marginal_distribution(pixel=4,norm='tmax',save='analyze/')
 dat = STEP(2022,1,18)
 dat.marginal_distribution(pixel=4,norm='tmax',save='analyze/')
 
-dat = STEP(2021,2,7)
-dat.marginal_distribution(pixel=4,norm='tmax',save='analyze/')
+# Da Funktioniert etwas nicht...
+# dat = STEP(2021,2,7)
+# dat.marginal_distribution(pixel=4,norm='tmax',save='analyze/')

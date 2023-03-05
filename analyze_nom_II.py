@@ -139,7 +139,7 @@ class STEP:
 
         return pldat, pltime, vmax
     
-    def landau(x,A,B,C,D):
+    def landau(self,x,A,B,C,D):
         return A* np.exp(-B*0.5*((x+C) + np.exp(-(x+C)))) + D
 
     def landau_fit(self,xdata,ydata):

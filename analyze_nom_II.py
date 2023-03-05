@@ -53,7 +53,7 @@ class STEP:
         '''Vorbereitung der STEP-Daten basierend auf Lars Skripten.'''
 
         if period:
-            time,dat = self.cut_data(self.idata,self.itime,period[0]-dt.timedelta(seconds=59),period[1])
+            time,dat = self.cut_data(period[0]-dt.timedelta(seconds=59),period[1])
         else:
             time,dat = self.itime, self.idata
         pldat = []
@@ -276,8 +276,8 @@ class STEP:
             if i == 1:
                 ax[i].set_ylabel('sum along date axis')
                 ax[i].set_xlabel('Energy [keV]')
-                ax[i].axvline(ebins[8])
-                ax[i].axvline(ebins[40])
+                ax[i].axvline(ebins[8],color='firebrick')
+                ax[i].axvline(ebins[40],color='firebrick')
             if i == 2:
                 ax[i].set_ylabel('sum along energy axis')
                 ax[i].set_xlabel('Date')

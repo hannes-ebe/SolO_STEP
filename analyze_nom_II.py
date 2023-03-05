@@ -8,6 +8,8 @@ import matplotlib.dates as mdates
 import load_nom_II as ld
 import plot_nom_II as pt
 
+from scipy.optimize import curve_fit
+
 ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
          3.6  ,   3.92 ,   4.288,   4.672,   5.088,   5.568,   6.08 ,
          6.624,   7.2  ,   7.84 ,   8.576,   9.344,  10.176,  11.136,
@@ -136,8 +138,15 @@ class STEP:
                 vmax[vpmax>vmax] = vpmax[vpmax>vmax]
 
         return pldat, pltime, vmax
+    
+    def landau(x,A,B,C,D):
+        return A* np.exp(-B*0.5*((x+C) + np.exp(-(x+C)))) + D
 
-    def marginal_distribution(self,ebins=ebins,res = '1min', head = 0, pixel = 0, period = None, save = False, norm = False, overflow = True, esquare = False):
+    def landau_fit(self,xdata,ydata):
+        popt, pcov = curve_fit(self.landau,xdata,ydata)
+        return popt,pcov
+
+    def marginal_distribution(self,ebins=ebins,res = '1min', head = 0, pixel = 0, period = None, save = False, norm = False, overflow = True, esquare = False, fit = False):
         '''Plot des Histogramms eines einzelnen Pixels und der Projektionen auf Zeit- und Energieachse'''
 
         pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
@@ -238,7 +247,14 @@ class STEP:
                 pdat = pldat[pixel]    
                 ax.append(fig.add_subplot(3,1,i+1))
                 ax[-1].set_xscale('log')
-                ax[-1].step(ebins[1:],np.sum(pdat,axis=0),where='pre')
+                ydata = np.sum(pdat,axis=0)
+                ax[-1].step(ebins[1:],ydata,where='pre')
+                if fit:
+                    xdata = ebins[1:] - np.diff(ebins)
+                    popt,pcov = self.landau_fit(xdata,ydata)
+                    print('Landau-Fit:')
+                    print('Parameter: ', popt)
+                    print('Kovarianz: ', pcov)
             
             if i == 2:
                 # Projektion auf Zeit-Achse

@@ -277,7 +277,8 @@ class STEP:
                 ax[i].set_ylabel('sum along date axis')
                 ax[i].set_xlabel('Energy [keV]')
                 ax[i].axvline(ebins[8],color='firebrick')
-                ax[i].axvline(ebins[40],color='firebrick')
+                ax[i].axvline(ebins[40],color='firebrick',label='energy range of STEP')
+                ax[i].legend()
             if i == 2:
                 ax[i].set_ylabel('sum along energy axis')
                 ax[i].set_xlabel('Date')

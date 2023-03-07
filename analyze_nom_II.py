@@ -345,7 +345,7 @@ class STEP:
         ax.axvline(ebins[8],color='firebrick')
         ax.axvline(ebins[40],color='firebrick',label='energy range of STEP')
         ax.legend()
-        ax.title('Landau-Fit')
+        ax.set_title('Landau-Fit')
     
         if fit:
             xdata = ebins[1:] - np.diff(ebins)

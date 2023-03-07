@@ -359,7 +359,7 @@ class STEP:
             D = round(popt[3],2)
             xlin = np.linspace(ebins[0],ebins[-1],1000)
             ax.plot(xlin,self.landau(xlin,A,B,C,D),color='orange')
-            ax.set_title(r'Landau-Fit: $C(E)\approx\frac{%s'%A+r'}{\sqrt{2\pi}}\exp{\Bigg(-\frac{%s'%B+r'}{2}((E+%s'%C+r')+\exp{(-(E+%s'%C+r'))\Bigg)})}+%s'%D+r'$', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+            ax.set_title(r'Landau-Fit: $C(E)\approx\frac{%s'%A+r'}{\sqrt{2\pi}}\exp{(-\frac{%s'%B+r'}{2}((E+%s'%C+r')+\exp{(-(E+%s'%C+r')))})}+%s'%D+r'$', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
         else:
             ax.set_title('Landau-Fit')
                

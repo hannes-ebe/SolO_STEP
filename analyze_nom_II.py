@@ -354,10 +354,10 @@ class STEP:
             print('Landau-Fit:')
             print('Parameter: ', popt)
             print('Kovarianz: ', pcov)
-            A,B,C,D = popt
+            A,B,C,D = round(np.array(popt),2)
             xlin = np.linspace(ebins[0],ebins[-1],1000)
             ax.plot(xlin,self.landau(xlin,A,B,C,D),color='orange')
-            ax.text(0.9, 0.5, r'$C(E)=\frac{A}{\sqrt{2\pi}}\exp{-\frac{B}{2}((x+C)+\exp{-(x+C)})}+D$', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+            ax.text(0.9, 0.5, r'$C(E)\approx\frac{%s'%A+r'}{\sqrt{2\pi}}\exp{-\frac{%s'%B+r'}{2}((x+%s'%C+r')+\exp{-(x+%s'%C+r')})}+%s'%D+r'$', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
                     
         if save:
             if type(save) == str:

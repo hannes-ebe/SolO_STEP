@@ -142,8 +142,8 @@ class STEP:
     def landau(self,x,A,B,C,D):
         return A* np.exp(-B*0.5*((x+C) + np.exp(-(x+C)))) + D
 
-    def landau_fit(self,xdata,ydata):
-        popt, pcov = curve_fit(self.landau,xdata,ydata)
+    def landau_fit(self,xdata,ydata,p0):
+        popt, pcov = curve_fit(self.landau,xdata,ydata,p0)
         return popt,pcov
 
     def marginal_distribution(self,ebins=ebins,res = '1min', head = 0, pixel = 0, period = None, save = False, norm = False, overflow = True, esquare = False, fit = False):
@@ -322,16 +322,16 @@ class STEP:
                 #plt.savefig('TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
         print('Analyzed marginal distribution successfully.')
 
-    def fit_energy(self,ebins=ebins,res = '1min', head = 0, pixel = 0, period = None, save = False, norm = False, overflow = True, esquare = False, fit = False):
+    def fit_energy(self,ebins=ebins,res = '1min', head = 0, pixel = 0, period = None, save = False, norm = False, overflow = True, esquare = False, fit = False, p0 = None):
         pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
         fig = plt.figure(figsize = (8,5))
         pdat = pldat[pixel]
-        ptime = np.append(pltime[pixel],pltime[pixel][-1]+dt.timedelta(seconds=60))
+        # ptime = np.append(pltime[pixel],pltime[pixel][-1]+dt.timedelta(seconds=60))
 
         if res == '1s':
             # Eigentlich Index i+16... Erstmal nicht relevant...
             pdat = pldat[0+16]
-            ptime = np.append(pltime[0+16],pltime[0+16][-1]+dt.timedelta(seconds=1))
+            # ptime = np.append(pltime[0+16],pltime[0+16][-1]+dt.timedelta(seconds=1))
 
         # Projektion auf Energie-Achse  
         pdat = pldat[pixel]    
@@ -340,18 +340,23 @@ class STEP:
         ydata = np.sum(pdat,axis=0)
         ax.step(ebins[1:],ydata,where='pre')
 
-        ax.set_ylabel('sum along date axis')
+        ax.set_ylabel('sum of counts along date axis')
         ax.set_xlabel('Energy [keV]')
         ax.axvline(ebins[8],color='firebrick')
         ax.axvline(ebins[40],color='firebrick',label='energy range of STEP')
         ax.legend()
+        ax.title('Landau-Fit')
     
         if fit:
             xdata = ebins[1:] - np.diff(ebins)
-            popt,pcov = self.landau_fit(xdata,ydata)
+            popt,pcov = self.landau_fit(xdata,ydata,p0)
             print('Landau-Fit:')
             print('Parameter: ', popt)
-            print('Kovarianz: ', pcov) 
+            print('Kovarianz: ', pcov)
+            A,B,C,D = popt
+            xlin = np.linspace(ebins[0],ebins[-1],1000)
+            ax.plot(xlin,self.landau(xlin,A,B,C,D),color='orange')
+                    
         if save:
             if type(save) == str:
                 plt.savefig(save + 'energy_fit_pixel%i'%pixel + 'head%i_'%head + 'TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
@@ -360,3 +365,5 @@ class STEP:
                 plt.savefig('energy_fit_pixel%i'%pixel + 'head%i_'%head + 'TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
                 #plt.savefig('TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
         print('Fitted energy successfully.')
+        if fit:
+            return popt,pcov

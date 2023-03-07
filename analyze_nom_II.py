@@ -345,8 +345,7 @@ class STEP:
         ax.axvline(ebins[8],color='firebrick')
         ax.axvline(ebins[40],color='firebrick',label='energy range of STEP')
         ax.legend()
-        ax.set_title('Landau-Fit')
-        ax.set_xlim(ebins[0],ebins[-10])
+        ax.set_xlim(ebins[0],ebins[-13])
     
         if fit:
             xdata = ebins[1:] - np.diff(ebins)
@@ -360,8 +359,10 @@ class STEP:
             D = round(popt[3],2)
             xlin = np.linspace(ebins[0],ebins[-1],1000)
             ax.plot(xlin,self.landau(xlin,A,B,C,D),color='orange')
-            ax.text(0.9, 0.5, r'$C(E)\approx\frac{%s'%A+r'}{\sqrt{2\pi}}\exp{-\frac{%s'%B+r'}{2}((x+%s'%C+r')+\exp{-(x+%s'%C+r')})}+%s'%D+r'$', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
-                    
+            ax.set_title(r'Landau-Fit: $C(E)\approx\frac{%s'%A+r'}{\sqrt{2\pi}}\exp{\Bigg(-\frac{%s'%B+r'}{2}((E+%s'%C+r')+\exp{(-(E+%s'%C+r'))\Bigg)})}+%s'%D+r'$', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+        else:
+            ax.set_title('Landau-Fit')
+               
         if save:
             if type(save) == str:
                 plt.savefig(save + 'energy_fit_pixel%i'%pixel + 'head%i_'%head + 'TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))

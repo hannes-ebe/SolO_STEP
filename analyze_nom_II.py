@@ -337,7 +337,7 @@ class STEP:
         # Projektion auf Energie-Achse  
         pdat = pldat[pixel]    
         ax.append(fig.add_subplot(3,1,1))
-        ax[-1].set_xscale('log')
+        # ax[-1].set_xscale('log')
         ydata = np.sum(pdat,axis=0)
         ax[-1].step(ebins[1:],ydata,where='pre')
     

@@ -318,6 +318,42 @@ class STEP:
                 plt.savefig(save + 'marginal_pixel%i_'%pixel + 'head%i_'%head + 'TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
                 #plt.savefig(save + 'head%i/'%head + 'TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
             else:
-                plt.savefig('TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
+                plt.savefig('marginal_pixel%i_'%pixel + 'head%i_'%head + 'TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
                 #plt.savefig('TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
         print('Analyzed marginal distribution successfully.')
+
+    def fit_energy(self,ebins=ebins,res = '1min', head = 0, pixel = 0, period = None, save = False, norm = False, overflow = True, esquare = False, fit = False):
+        pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
+        fig = plt.figure(figsize = (8,15))
+        ax = []
+        pdat = pldat[pixel]
+        ptime = np.append(pltime[pixel],pltime[pixel][-1]+dt.timedelta(seconds=60))
+
+        if res == '1s':
+            # Eigentlich Index i+16... Erstmal nicht relevant...
+            pdat = pldat[0+16]
+            ptime = np.append(pltime[0+16],pltime[0+16][-1]+dt.timedelta(seconds=1))
+
+        # Projektion auf Energie-Achse  
+        pdat = pldat[pixel]    
+        ax.append(fig.add_subplot(3,1,1))
+        ax[-1].set_xscale('log')
+        ydata = np.sum(pdat,axis=0)
+        ax[-1].step(ebins[1:],ydata,where='pre')
+    
+        if fit:
+            xdata = ebins[1:] - np.diff(ebins)
+            popt,pcov = self.landau_fit(xdata,ydata)
+            print('Landau-Fit:')
+            print('Parameter: ', popt)
+            print('Kovarianz: ', pcov) 
+        if period:
+            ax[0].set_xlim(period[0],period[1])
+        if save:
+            if type(save) == str:
+                plt.savefig(save + 'energy_fit%i_'%pixel + 'head%i_'%head + 'TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
+                #plt.savefig(save + 'head%i/'%head + 'TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
+            else:
+                plt.savefig('energy_fit%i_'%pixel + 'head%i_'%head + 'TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
+                #plt.savefig('TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
+        print('Fitted energy successfully.')

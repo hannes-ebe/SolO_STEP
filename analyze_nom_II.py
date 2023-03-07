@@ -346,7 +346,7 @@ class STEP:
         ax.axvline(ebins[40],color='firebrick',label='energy range of STEP')
         ax.legend()
         ax.set_title('Landau-Fit')
-        ax.set_xlim(ebins[0],ebins[-3])
+        ax.set_xlim(ebins[0],ebins[-10])
     
         if fit:
             xdata = ebins[1:] - np.diff(ebins)
@@ -357,7 +357,7 @@ class STEP:
             A,B,C,D = popt
             xlin = np.linspace(ebins[0],ebins[-1],1000)
             ax.plot(xlin,self.landau(xlin,A,B,C,D),color='orange')
-            ax.text(0.9, 0.5, r'C(E)=\frac{A}{\sqrt{2\pi}}\exp{-\frac{B}{2}((x+C)+\exp{-(x+C)})}+D', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+            ax.text(0.9, 0.5, r'$C(E)=\frac{A}{\sqrt{2\pi}}\exp{-\frac{B}{2}((x+C)+\exp{-(x+C)})}+D$', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
                     
         if save:
             if type(save) == str:

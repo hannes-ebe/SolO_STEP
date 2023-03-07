@@ -326,12 +326,12 @@ class STEP:
         pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
         fig = plt.figure(figsize = (8,5))
         pdat = pldat[pixel]
-        # ptime = np.append(pltime[pixel],pltime[pixel][-1]+dt.timedelta(seconds=60))
+        ptime = np.append(pltime[pixel],pltime[pixel][-1]+dt.timedelta(seconds=60))
 
         if res == '1s':
             # Eigentlich Index i+16... Erstmal nicht relevant...
             pdat = pldat[0+16]
-            # ptime = np.append(pltime[0+16],pltime[0+16][-1]+dt.timedelta(seconds=1))
+            ptime = np.append(pltime[0+16],pltime[0+16][-1]+dt.timedelta(seconds=1))
 
         # Projektion auf Energie-Achse  
         pdat = pldat[pixel]    

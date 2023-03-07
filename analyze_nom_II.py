@@ -140,7 +140,7 @@ class STEP:
         return pldat, pltime, vmax
     
     def landau(self,x,A,B,C,D):
-        return A* np.exp(-B*0.5*((x+C) + np.exp(-(x+C)))) + D
+        return A/np.sqrt(2*np.pi)*np.exp(-B*0.5*((x+C) + np.exp(-(x+C)))) + D
 
     def landau_fit(self,xdata,ydata,p0):
         popt, pcov = curve_fit(self.landau,xdata,ydata,p0)
@@ -346,6 +346,7 @@ class STEP:
         ax.axvline(ebins[40],color='firebrick',label='energy range of STEP')
         ax.legend()
         ax.set_title('Landau-Fit')
+        ax.set_xlim(ebins[0],ebins[-3])
     
         if fit:
             xdata = ebins[1:] - np.diff(ebins)
@@ -356,6 +357,7 @@ class STEP:
             A,B,C,D = popt
             xlin = np.linspace(ebins[0],ebins[-1],1000)
             ax.plot(xlin,self.landau(xlin,A,B,C,D),color='orange')
+            ax.text(0.9, 0.5, r'C(E)=\frac{A}{\sqrt{2\pi}}\exp{-\frac{B}{2}((x+C)+\exp{-(x+C)})}+D', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
                     
         if save:
             if type(save) == str:

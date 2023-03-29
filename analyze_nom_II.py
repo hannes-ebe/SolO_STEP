@@ -139,6 +139,47 @@ class STEP:
 
         return pldat, pltime, vmax
     
+    def pixel_integral_window(self, filename, ebins=ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False):
+        '''Funktion, die Daten für alle 16 Pixel bekommt und diese darstellt. Übergebe ein Zeitfenster, über welches die jeweiligen Energien integriert werden.
+        save gibt den directory-Pfad an unter dem gespeichert wird.'''
+        # Vorbereitung Daten
+        pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
+        
+        # Plotting
+        fig = plt.figure(figsize = (15,10))
+        fig.subplots_adjust(wspace = 0, hspace = 0)
+        ax = []
+        for i in range(16):
+            pdat = pldat[i]
+            if i == 0:
+                ax.append(fig.add_subplot(4,5,3))
+            else:
+                ax.append(fig.add_subplot(4,5,5+i,sharex = ax[0], sharey = ax[0]))
+                ax[-1].set_xscale('log')
+                integral = np.sum(pdat,axis=0)
+                ax[-1].step(ebins[1:],integral,where='pre')
+                # calculating mean
+                mean = 0.0
+                for j in range(len(integral)):
+                    # Für Bestimmung des Mittelwertes der Verteilung wird Mitte der Bins gewählt
+                    mean += integral[j]*0.5*(ebins[j+1]+ebins[j])
+                mean = mean/np.sum(integral)
+                print(mean)
+                ax[i].axvline(mean,color='blue',label='Mean')
+                
+                ax[i].set_ylabel('integral along time')
+                ax[i].set_xlabel('Energy [keV]')
+                ax[i].axvline(ebins[8],color='firebrick')
+                ax[i].axvline(ebins[40],color='firebrick',label='Energy range of STEP')
+                ax[i].legend()
+        if save:
+            if type(save) == str:
+                plt.savefig(save + filename)
+            else:
+                plt.savefig(filename)
+        print('Plotted ' + filename + ' successfully.')
+
+
     def landau(self,x,A,B,C,D):
         return A/np.sqrt(2*np.pi)*np.exp(-B*0.5*((x+C) + np.exp(-(x+C)))) + D
 

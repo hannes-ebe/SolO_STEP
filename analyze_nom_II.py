@@ -199,6 +199,14 @@ class STEP:
                 plt.savefig(filename)
         print('Plotted ' + filename + ' successfully.')
 
+    def evolution_energy_means(self, filename, ebins=ebins,res = '1min', head = 0, period = None, window_width = 5, save = False, norm = False, overflow = True, esquare = False):
+        '''Übergebe period und Zeitfensterbreite. Intergriere die jeweiligen Energien in den Zeitfenstern und stelle die Entwicklung der means für die einzelnen Pixel da.'''
+        i = 0
+        while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
+            window = [period[0] + dt.timedelta(minutes=i*window_width), period[0] + dt.timedelta(minutes=(i+1)*window_width)]
+            pldat, pltime, vmax = self.data_prep(ebins,res,head,window,norm,overflow,esquare)
+            # Hier jetzt noch Means für alle Pixel berechnen. Am besten gleich mit Zeit
+
 
     def landau(self,x,A,B,C,D):
         return A/np.sqrt(2*np.pi)*np.exp(-B*0.5*((x+C) + np.exp(-(x+C)))) + D

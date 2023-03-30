@@ -10,7 +10,9 @@ import plot_nom_II as pt
 
 from scipy.optimize import curve_fit
 
-print(str(dt.datetime(2023,3,30,8,30)))
+print([i for i in range(1,16)])
+
+# print(str(dt.datetime(2023,3,30,8,30)))
 
 # save = 'etracks/'
 # filename = 'test.png'

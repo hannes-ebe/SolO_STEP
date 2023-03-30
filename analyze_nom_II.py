@@ -173,7 +173,7 @@ class STEP:
                 
                 if i == 5:
                     ax[i].set_ylabel('integral along time')
-                if i == 12:
+                if i == 13:
                     ax[i].set_xlabel('Energy [keV]')
                 ax[i].axvline(ebins[8],color='firebrick')
                 ax[i].axvline(ebins[40],color='firebrick') #,label='Energy range of STEP')
@@ -182,10 +182,7 @@ class STEP:
         ax[0].set_xscale('log')
         ax[0].scatter(means,[i for i in range(1,16)],marker='x',label='Mean')
         ax[0].legend()
-        # Neuer Subplot nur für Textinfos
-        ax.append(fig.add_subplot(4,5,4))
-        # Default data coordinates sind 0 bis 1
-        ax[-1].text(0.5, 0.5,'Red Lines: Energy range of STEP\nBlue Line: Mean of energy distribution')
+        ax[0].text(1.5, 0.5,'Red Lines: Energy range of STEP\nBlue Line: Mean of energy distribution',transform=ax[0].transAxes)
 
         if i not in [0,1,6,11]:
             for t in ax[i].get_yticklabels():

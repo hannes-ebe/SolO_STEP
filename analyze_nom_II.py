@@ -180,7 +180,7 @@ class STEP:
                 # ax[i].legend()
         # Plot der Means:
         ax[0].set_xscale('log')
-        ax[0].scatter(means,[i for i in range(1,16)],marker='x',label='Mean')
+        ax[0].scatter(means,[i for i in range(1,17)],marker='x',label='Mean')
         ax[0].legend()
         ax[0].text('Red Lines: Energy range of STEP\nBlue Line: Mean of energy distribution', 1.5, 0.5, transform=ax[0].transAxes)
 

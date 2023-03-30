@@ -184,7 +184,8 @@ class STEP:
         ax[0].legend()
         # Neuer Subplot nur für Textinfos
         ax.append(fig.add_subplot(4,5,4))
-        ax[-1].text('Red Lines: Energy range of STEP\nBlue Line: Mean of energy distribution', 0.5, 0.5, transform=ax[-1].transAxes)
+        # Default data coordinates sind 0 bis 1
+        ax[-1].text('Red Lines: Energy range of STEP\nBlue Line: Mean of energy distribution', 0.5, 0.5)
 
         if i not in [0,1,6,11]:
             for t in ax[i].get_yticklabels():

@@ -171,7 +171,7 @@ class STEP:
                 means.append(mean)
                 ax[i].axvline(mean,color='blue') #,label='Mean')
                 
-                if i == 5:
+                if i == 6:
                     ax[i].set_ylabel('integral along time')
                 if i == 13:
                     ax[i].set_xlabel('Energy [keV]')
@@ -180,6 +180,7 @@ class STEP:
                 # ax[i].legend()
         # Plot der Means:
         ax[0].set_xscale('log')
+        ax[0].set_ylabel('pixel')
         ax[0].scatter(means,[i for i in range(1,16)],marker='x',label='Mean')
         ax[0].legend()
         ax[0].text(1.5, 0.5,'Red Lines: Energy range of STEP\nBlue Line: Mean of energy distribution',transform=ax[0].transAxes)

@@ -10,7 +10,10 @@ import plot_nom_II as pt
 
 from scipy.optimize import curve_fit
 
-print([i for i in range(1,16)])
+helper = [i for i in range(1,16)]
+for i in helper:
+    if i not in [0,1,6,11]:
+        print(str(i) + ' not in list.')
 
 # print(str(dt.datetime(2023,3,30,8,30)))
 

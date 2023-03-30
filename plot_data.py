@@ -23,12 +23,14 @@ def plot(year,month,day,lastofmonth=False):
     print('Data combined successfully.')
     
     # Plotting data (Aufruf zum Speichern in Plotfunktion)
-    pt.plot_ts(data, time, head=0, save='plots_norm/tmax/', norm='tmax')
+    pt.plot_ts(data, time, period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)], head=0, save=True, norm='tmax')
     # pt.plot_ts(data, time, head=0, save='plots_norm/logmax/', norm='logmax')
     # pt.plot_ts(data, time, head=1, save='plots_norm/')
     # pt.plot_ts_diff(data,time, save='plots_norm/', single=False)
     plt.close('all')
     print('Data plotted successfully.')
+
+plot(2021,12,4)
     
     
 # Oktober 2021 
@@ -60,28 +62,28 @@ def plot(year,month,day,lastofmonth=False):
 
 # Januar 2022
 # 10/01/22 und 11/01/22 wollen anscheinend nicht...
-for i in range(12,32):
-    mon = 1
-    y = 2022
-    if i != 31:
-        plot(y,mon,i)
-    else:
-        plot(y,mon,i,lastofmonth=True)
+# for i in range(12,32):
+#     mon = 1
+#     y = 2022
+#     if i != 31:
+#         plot(y,mon,i)
+#     else:
+#         plot(y,mon,i,lastofmonth=True)
 
-# Februar 2022
-for i in range(1,29):
-    mon = 2
-    y = 2022
-    if i != 28:
-        plot(y,mon,i)
-    else:
-        plot(y,mon,i,lastofmonth=True)
+# # Februar 2022
+# for i in range(1,29):
+#     mon = 2
+#     y = 2022
+#     if i != 28:
+#         plot(y,mon,i)
+#     else:
+#         plot(y,mon,i,lastofmonth=True)
         
-# März 2022
-for i in range(1,9):
-    mon = 3
-    y =2022
-    if i != 31:
-        plot(y,mon,i)
-    else:
-        plot(y,mon,i,lastofmonth=True)
+# # März 2022
+# for i in range(1,9):
+#     mon = 3
+#     y =2022
+#     if i != 31:
+#         plot(y,mon,i)
+#     else:
+#         plot(y,mon,i,lastofmonth=True)

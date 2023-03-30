@@ -139,6 +139,32 @@ class STEP:
 
         return pldat, pltime, vmax
     
+    def step_plot(self,xlabel,ylabel,title):
+        '''Erzeugt den bekannten STEP-Plot mit allen 16 Pixeln. Gibt Liste mit axes zurück.'''
+        fig = plt.figure(figsize = (15,10))
+        fig.subplots_adjust(wspace = 0, hspace = 0)
+        ax = []        
+        for i in range(16):
+            if i == 0:
+                ax.append(fig.add_subplot(4,5,3))
+            else:
+                if i == 1:
+                    ax.append(fig.add_subplot(4,5,5+i))
+                else:
+                    ax.append(fig.add_subplot(4,5,5+i,sharex = ax[1], sharey = ax[1]))              
+                if i == 6:
+                    ax[i].set_ylabel(ylabel)
+                if i == 13:
+                    ax[i].set_xlabel(xlabel)
+            if i not in [0,1,6,11]:
+                for t in ax[i].get_yticklabels():
+                    t.set_visible(False)
+            if i < 11:
+                for t in ax[i].get_xticklabels():
+                    t.set_visible(False)
+            ax[0].set_title(title)
+        return ax
+    
     def pixel_integral_window(self, filename, ebins=ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False):
         '''Funktion, die Daten für alle 16 Pixel bekommt und diese darstellt. Übergebe ein Zeitfenster, über welches die jeweiligen Energien integriert werden.
         save gibt den directory-Pfad an unter dem gespeichert wird.'''
@@ -181,7 +207,6 @@ class STEP:
             if i not in [0,1,6,11]:
                 for t in ax[i].get_yticklabels():
                     t.set_visible(False)
-            #ax[i].set_yticklabels([])
             if i < 11:
                 for t in ax[i].get_xticklabels():
                     t.set_visible(False)
@@ -202,10 +227,40 @@ class STEP:
     def evolution_energy_means(self, filename, ebins=ebins,res = '1min', head = 0, period = None, window_width = 5, save = False, norm = False, overflow = True, esquare = False):
         '''Übergebe period und Zeitfensterbreite. Intergriere die jeweiligen Energien in den Zeitfenstern und stelle die Entwicklung der means für die einzelnen Pixel da.'''
         i = 0
+        pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
+        
         while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
             window = [period[0] + dt.timedelta(minutes=i*window_width), period[0] + dt.timedelta(minutes=(i+1)*window_width)]
             pldat, pltime, vmax = self.data_prep(ebins,res,head,window,norm,overflow,esquare)
-            # Hier jetzt noch Means für alle Pixel berechnen. Am besten gleich mit Zeit
+            pixel_means[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
+            
+            # Berechnung der Mittelwerte:
+            for k in range(1,16):
+                pdat = pldat[k]
+                integral = np.sum(pdat,axis=0)
+                # calculating mean
+                mean = 0.0
+                for j in range(len(integral)):
+                    # Für Bestimmung des Mittelwertes der Verteilung wird Mitte der Bins gewählt
+                    mean += integral[j]*0.5*(ebins[j+1]+ebins[j])
+                mean = mean/np.sum(integral)
+                pixel_means[k].append(mean)
+            i +=1
+        
+        ax = self.step_plot('Time', 'Mean of energy distribution [keV]', 'Evolution of mean of energy distribution for head ' + str(head) + ' from ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps)')
+        for i in range(1,16):
+            ax[i].plot(pixel_means[0],pixel_means[i])
+            ax[i].set_yscale('log')
+            if i > 10:
+                ax[i].tick_params(labelrotation=90)
+            
+        if save:
+            if type(save) == str:
+                plt.savefig(save + filename)
+            else:
+                plt.savefig(filename)
+        print('Plotted ' + filename + ' successfully.')            
+
 
 
     def landau(self,x,A,B,C,D):

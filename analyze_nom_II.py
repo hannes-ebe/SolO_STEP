@@ -182,7 +182,9 @@ class STEP:
         ax[0].set_xscale('log')
         ax[0].scatter(means,[i for i in range(1,16)],marker='x',label='Mean')
         ax[0].legend()
-        ax[0].text('Red Lines: Energy range of STEP\nBlue Line: Mean of energy distribution', 1.5, 0.5, transform=ax[0].transAxes)
+        # Neuer Subplot nur für Textinfos
+        ax.append(fig.add_subplot(4,5,4))
+        ax[-1].text('Red Lines: Energy range of STEP\nBlue Line: Mean of energy distribution', 0.5, 0.5, transform=ax[0].transAxes)
 
         if i not in [0,1,6,11]:
             for t in ax[i].get_yticklabels():

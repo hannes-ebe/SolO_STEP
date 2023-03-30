@@ -178,20 +178,19 @@ class STEP:
                 ax[i].axvline(ebins[8],color='firebrick')
                 ax[i].axvline(ebins[40],color='firebrick') #,label='Energy range of STEP')
                 # ax[i].legend()
+            if i not in [0,1,6,11]:
+                for t in ax[i].get_yticklabels():
+                    t.set_visible(False)
+            #ax[i].set_yticklabels([])
+            if i < 11:
+                for t in ax[i].get_xticklabels():
+                    t.set_visible(False)
         # Plot der Means:
         ax[0].set_xscale('log')
         ax[0].set_ylabel('pixel')
         ax[0].scatter(means,[i for i in range(1,16)],marker='x',label='Mean')
         ax[0].legend()
         ax[0].text(1.5, 0.5,'Red Lines: Energy range of STEP\nBlue Line: Mean of energy distribution',transform=ax[0].transAxes)
-
-        if i not in [0,1,6,11]:
-            for t in ax[i].get_yticklabels():
-                t.set_visible(False)
-            #ax[i].set_yticklabels([])
-        if i < 11:
-            for t in ax[i].get_xticklabels():
-                t.set_visible(False)
         ax[0].set_title('Energy distribution and mean for head ' + str(head) + ' from ' + str(period[0]) + ' to ' + str(period[1]))
         if save:
             if type(save) == str:

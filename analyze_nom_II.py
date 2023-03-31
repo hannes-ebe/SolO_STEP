@@ -162,7 +162,7 @@ class STEP:
             if i < 11:
                 for t in ax[i].get_xticklabels():
                     t.set_visible(False)
-            ax[0].set_title(title)
+        ax[0].set_title(title)
         return ax
     
     def pixel_integral_window(self, filename, ebins=ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False):
@@ -252,7 +252,9 @@ class STEP:
             ax[i].plot(pixel_means[0],pixel_means[i])
             ax[i].set_yscale('log')
             if i > 10:
-                ax[i].tick_params(labelrotation=90)
+                ax[i].tick_params(axis='x',labelrotation=90)
+            ax[i].axhline(ebins[8],color='firebrick')
+            ax[i].axhline(ebins[40],color='firebrick') #,label='Energy range of STEP')
             
         if save:
             if type(save) == str:

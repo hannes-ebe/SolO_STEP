@@ -165,8 +165,8 @@ class STEP:
         ax[0].set_title(title)
         return fig, ax
     
-    def plot_ts(self,ebins=ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False):
-        '''Plottet die Zeitreihen der Energien.'''
+    def plot_ts(self,ebins=ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False, box_list= False):
+        '''Plottet die Zeitreihen der Energien. Übergebe verschachtelte Liste mit Grenzen für Boxen, die eingezeichnet werden. Grenzen als Indizes der Listen übergeben.'''
         pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
         fig, ax = self.step_plot('Date', 'Energy [keV]', 'Head %i'%head)
         for i in range(16):
@@ -256,6 +256,13 @@ class STEP:
                 elif norm == 'emax':
                     tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
                 
+            # PLots der Boxen, Grenzen als  Indizes übergeben.
+            # [[[xlow,xup],[ylow,uyp]],[[xlow,xup],[ylow,yup]]]
+            # if type(box_list) == list:
+            #     for box in box_list:
+            #         ax[i].hlines(pdat)
+
+            # Wie sehen Daten eigentlich aus???
                 
         if (norm and i == 0): # or not norm:
             tax = fig.add_subplot(4,50,31)
@@ -274,6 +281,7 @@ class STEP:
 
         ax[i].hlines(ebins[8],ptime[0],ptime[-1])
         ax[i].hlines(ebins[40],ptime[0],ptime[-1])
+
         
         if i > 10:
             ax[i].tick_params(labelrotation=90)

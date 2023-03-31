@@ -163,7 +163,130 @@ class STEP:
                 for t in ax[i].get_xticklabels():
                     t.set_visible(False)
         ax[0].set_title(title)
-        return ax
+        return fig, ax
+    
+    def plot_ts(self,ebins=ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False):
+        '''Plottet die Zeitreihen der Energien.'''
+        pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
+        fig, ax = self.step_plot('Date', 'Energy [keV]', 'Head %i'%head)
+        for i in range(16):
+            pdat = pldat[i]
+            ptime = np.append(pltime[i],pltime[i][-1]+dt.timedelta(seconds=60))
+
+            ax[i].set_yscale('log')
+            if type(res) == dt.timedelta:
+                if not norm:
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T, cmap = cmap, vmin = 0.1)
+                elif norm == 'tmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T/vmax, cmap = cmap, vmin = np.amin(1/vmax)*0.95,vmax = 1.)
+                elif norm == 'ptmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T/vmax[i], cmap = cmap, vmin = np.amin(1/vmax)*0.95,vmax = 1.)
+                elif norm == 'ptemax':
+                    pdat2 = (pdat.T/vmax[i]).T
+                    vemax = np.amax(pdat2,axis=0)
+                    print(pdat.shape)
+                    print(vemax.shape)
+                    pdat2 = (pdat2/vemax)
+                    pdat2[np.isinf(pdat2)] = np.NaN
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat2.T, cmap = cmap, vmin = np.nanmin(pdat2),vmax = 1.)
+                elif norm == 'max':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T, cmap = cmap, vmin = 0.,vmax = vmax)
+                elif norm == 'logmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,np.log10(pdat).T, cmap = cmap, vmin = 0.,vmax = np.log10(vmax))
+                elif norm == 'pemax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax[i]).T, cmap = cmap, vmin = np.amin(1/vmax[i])*0.99,vmax = 1.)
+                elif norm == 'emax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
+
+            elif res == '1min':
+                if not norm:
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T, cmap = cmap, vmin = 0.1)
+                elif norm == 'tmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T/vmax, cmap = cmap, vmin = np.amin(1/vmax)*0.95,vmax = 1.)
+                elif norm == 'ptmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T/vmax[i], cmap = cmap, vmin = np.amin(1/vmax)*0.95,vmax = 1.)
+                elif norm == 'ptemax':
+                    pdat2 = (pdat.T/vmax[i]).T
+                    vemax = np.amax(pdat2,axis=0)
+                    print(pdat.shape)
+                    print(vemax.shape)
+                    pdat2 = (pdat2/vemax)
+                    pdat2[np.isinf(pdat2)] = np.NaN
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat2.T, cmap = cmap, vmin = np.nanmin(pdat2),vmax = 1.)
+                elif norm == 'max':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T, cmap = cmap, vmin = 0.,vmax = vmax)
+                elif norm == 'logmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,np.log10(pdat).T, cmap = cmap, vmin = 0.,vmax = np.log10(vmax))
+                elif norm == 'pemax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax[i]).T, cmap = cmap, vmin = np.amin(1/vmax[i])*0.99,vmax = 1.)
+                elif norm == 'emax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
+
+            elif res == '1s':
+                if not norm:
+                    tmp = ax[i].pcolormesh(ptime,ebins[:9],pdat[:,:8].T, cmap = cmap, vmin = 0.1)
+                    tmp = ax[i].pcolormesh(ptime,ebins[40:],pdat[:,40:].T, cmap = cmap, vmin = 0.1)
+                elif norm == 'tmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T/vmax, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
+                elif norm == 'ptmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T/vmax[i], cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
+                elif norm == 'max':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T, cmap = cmap, vmin = 0.,vmax = vmax)
+                elif norm == 'logmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins[:9],np.log10(pdat[:,:8]).T, cmap = cmap, vmin = np.log10(1./60.),vmax = np.log10(vmax))
+                    tmp = ax[i].pcolormesh(ptime,ebins[40:],np.log10(pdat[:,40:]).T, cmap = cmap, vmin = np.log10(1./60.),vmax = np.log10(vmax))
+                elif norm == 'pemax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax[i]).T, cmap = cmap, vmin = np.amin(1/vmax[i])*0.99,vmax = 1.)
+                elif norm == 'emax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
+                pdat = pldat[i+16]
+                ptime = np.append(pltime[i+16],pltime[i+16][-1]+dt.timedelta(seconds=1))
+                if not norm:
+                    tmp = ax[i].pcolormesh(ptime,ebins[8:41],pdat.T, cmap = cmap, vmin = 0.1)
+                elif norm == 'tmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T/vmax, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
+                elif norm == 'ptmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T/vmax[i], cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
+                elif norm == 'max':
+                    tmp = ax[i].pcolormesh(ptime,ebins,pdat.T, cmap = cmap, vmin = 0.,vmax = vmax)
+                elif norm == 'logmax':
+                    tmp = ax[i].pcolormesh(ptime,ebins[8:41],np.log10(pdat).T, cmap = cmap, vmin = np.log10(1./60.),vmax = np.log10(vmax))
+                elif norm == 'pemax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax[i]).T, cmap = cmap, vmin = np.amin(1/vmax[i])*0.99,vmax = 1.)
+                elif norm == 'emax':
+                    tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
+                
+                
+        if (norm and i == 0): # or not norm:
+            tax = fig.add_subplot(4,50,31)
+            if norm == 'tmax':
+                plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t)')
+            elif norm == 'ptmax':
+                plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t)')
+            elif norm == 'max':
+                plt.colorbar(tmp,cax = tax, label = 'Counts')
+            elif norm == 'logmax':
+                plt.colorbar(tmp,cax = tax, label = 'Log10(C)')
+            elif norm == 'pemax':
+                plt.colorbar(tmp,cax = tax, label = 'C(E,pixel)/max(C(E,pixel)')
+            elif norm == 'emax':
+                plt.colorbar(tmp,cax = tax, label = 'C(E)/max(C(E)')
+
+        ax[i].hlines(ebins[8],ptime[0],ptime[-1])
+        ax[i].hlines(ebins[40],ptime[0],ptime[-1])
+        
+        if i > 10:
+            ax[i].tick_params(labelrotation=90)
+        if period:
+            ax[0].set_xlim(period[0],period[1])
+        if save:
+            if type(save) == str:
+                plt.savefig(save + 'TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
+                #plt.savefig(save + 'head%i/'%head + 'TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
+            else:
+                plt.savefig('TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
+                #plt.savefig('TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
+        print('Plotted TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png successfully.'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res) + ' successfully.')    
     
     def pixel_integral_window(self, filename, ebins=ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False):
         '''Funktion, die Daten für alle 16 Pixel bekommt und diese darstellt. Übergebe ein Zeitfenster, über welches die jeweiligen Energien integriert werden.
@@ -247,7 +370,7 @@ class STEP:
                 pixel_means[k].append(mean)
             i +=1
         
-        ax = self.step_plot('Time', 'Mean of energy distribution [keV]', 'Evolution of mean of energy distribution for head ' + str(head) + ' from ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps)')
+        fig, ax = self.step_plot('Time', 'Mean of energy distribution [keV]', 'Evolution of mean of energy distribution for head ' + str(head) + ' from ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps)')
         for i in range(1,16):
             ax[i].plot(pixel_means[0],pixel_means[i])
             ax[i].set_yscale('log')

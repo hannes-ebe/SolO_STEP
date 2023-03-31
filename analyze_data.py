@@ -12,8 +12,8 @@ dat = STEP(2021,12,4)
 # dat.fit_energy(pixel=4,norm='tmax',save='analyze/',period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)],fit=True,p0=[17500,1,-10,0])
 
 # dat.pixel_integral_window(filename='test.png',norm='tmax',save='etracks/',period=[dt.datetime(2021,12,4,14,30),dt.datetime(2021,12,4,14,35)])
-dat.evolution_energy_means(filename='test_evolution.png',norm='tmax',save='etracks/',period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)])
-
+# dat.evolution_energy_means(filename='test_evolution.png',norm='tmax',save='etracks/',period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)])
+dat.plot_ts(period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)], head=0, save='etracks', norm='tmax')
 
 
 # dat = STEP(2021,12,5)

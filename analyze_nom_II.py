@@ -27,15 +27,15 @@ hmap = mpl.cm.seismic
 class STEP:
     '''Lädt STEP-Daten zur anschließenden Analyse'''
 
-    def __init__(self,year,month,day,lastofmonth=False):
+    def __init__(self,rpath,year,month,day,lastofmonth=False):
         # Loading data
         if lastofmonth:
             if month!=12:
-                self.itime, self.idata = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year,month+1,1)), products=('M','A'))
+                self.itime, self.idata = ld.load_nom(rpath=rpath,period=(dt.datetime(year,month,day),dt.datetime(year,month+1,1)), products=('M','A'))
             else:
-                self.itime, self.idata = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year+1,1,1)), products=('M','A'))
+                self.itime, self.idata = ld.load_nom(rpath=rpath,period=(dt.datetime(year,month,day),dt.datetime(year+1,1,1)), products=('M','A'))
         else:
-            self.itime, self.idata = ld.load_nom(period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)), products=('M','A'))
+            self.itime, self.idata = ld.load_nom(rpath=rpath,period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)), products=('M','A'))
         print('Data loaded successfully.')
         
         # Combining data (Main and Auxiliary Product)
@@ -53,6 +53,7 @@ class STEP:
 
     def data_prep(self,ebins=ebins,res = '1min', head = 0, period = None, norm = False, overflow = True, esquare = False):
         '''Vorbereitung der STEP-Daten basierend auf Lars Skripten.'''
+        vmax = None # Falls keine Normierung angegben wird, gebe ich None zurück. Was soll vmax eigentlich darstellen?
 
         if period:
             time,dat = self.cut_data(period[0]-dt.timedelta(seconds=59),period[1])
@@ -139,6 +140,14 @@ class STEP:
 
         return pldat, pltime, vmax
     
+    def data_boxes(self,pldat,ptime,box_list,ebins=ebins):
+        '''Nehme pldat und, um die Daten auf die Boxen einzuschränken. Dabei werden die Werte, die ignoriert werden sollen durch 0.0 ersetzt.'''
+        # Erster Index von pdat müsste die Zeitreihe sein, der zweite der Energie-Bin.
+        # [[[timelow,timeup],[energylow,energyup]],[[timelow,timeup],[energylow,energyup]]]
+        # for pdat in pldat:
+        #     for 
+            
+
     def step_plot(self,xlabel,ylabel,title):
         '''Erzeugt den bekannten STEP-Plot mit allen 16 Pixeln. Gibt Liste mit axes zurück.'''
         fig = plt.figure(figsize = (15,10))
@@ -257,36 +266,38 @@ class STEP:
                     tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
                 
             # PLots der Boxen, Grenzen als  Indizes übergeben.
-            # [[[xlow,xup],[ylow,uyp]],[[xlow,xup],[ylow,yup]]]
-            # if type(box_list) == list:
-            #     for box in box_list:
-            #         ax[i].hlines(pdat)
-
-            # Wie sehen Daten eigentlich aus???
+            # Erster Index von pdat müsste die Zeitreihe sein, der zweite der Energie-Bin.
+            # [[[timelow,timeup],[energylow,energyup]],[[timelow,timeup],[energylow,energyup]]]
+            if type(box_list) == list:
+                for box in box_list:
+                    tlow = ptime[box[0][0]]
+                    tup = ptime[box[0][1]]
+                    elow = ebins[box[1][0]]
+                    eup = ebins[box[1][1]]
+                    ax[i].vlines([tlow,tup],elow,eup,color='firebrick')
+                    ax[i].hlines([elow,eup],tlow,tup,color='firebrick')
                 
-        if (norm and i == 0): # or not norm:
-            tax = fig.add_subplot(4,50,31)
-            if norm == 'tmax':
-                plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t)')
-            elif norm == 'ptmax':
-                plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t)')
-            elif norm == 'max':
-                plt.colorbar(tmp,cax = tax, label = 'Counts')
-            elif norm == 'logmax':
-                plt.colorbar(tmp,cax = tax, label = 'Log10(C)')
-            elif norm == 'pemax':
-                plt.colorbar(tmp,cax = tax, label = 'C(E,pixel)/max(C(E,pixel)')
-            elif norm == 'emax':
-                plt.colorbar(tmp,cax = tax, label = 'C(E)/max(C(E)')
+            if (norm and i == 0): # or not norm:
+                tax = fig.add_subplot(4,50,31)
+                if norm == 'tmax':
+                    plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t)')
+                elif norm == 'ptmax':
+                    plt.colorbar(tmp,cax = tax, label = 'Counts(t)/max(Counts(t)')
+                elif norm == 'max':
+                    plt.colorbar(tmp,cax = tax, label = 'Counts')
+                elif norm == 'logmax':
+                    plt.colorbar(tmp,cax = tax, label = 'Log10(C)')
+                elif norm == 'pemax':
+                    plt.colorbar(tmp,cax = tax, label = 'C(E,pixel)/max(C(E,pixel)')
+                elif norm == 'emax':
+                    plt.colorbar(tmp,cax = tax, label = 'C(E)/max(C(E)')
 
-        ax[i].hlines(ebins[8],ptime[0],ptime[-1])
-        ax[i].hlines(ebins[40],ptime[0],ptime[-1])
-
-        
-        if i > 10:
-            ax[i].tick_params(labelrotation=90)
-        if period:
-            ax[0].set_xlim(period[0],period[1])
+            ax[i].hlines(ebins[8],ptime[0],ptime[-1])
+            ax[i].hlines(ebins[40],ptime[0],ptime[-1])            
+            if i > 10:
+                ax[i].tick_params(labelrotation=90)
+            if period:
+                ax[0].set_xlim(period[0],period[1])
         if save:
             if type(save) == str:
                 plt.savefig(save + 'TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))

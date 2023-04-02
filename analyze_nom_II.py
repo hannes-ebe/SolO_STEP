@@ -140,12 +140,25 @@ class STEP:
 
         return pldat, pltime, vmax
     
-    def data_boxes(self,pldat,ptime,box_list,ebins=ebins):
-        '''Nehme pldat und, um die Daten auf die Boxen einzuschränken. Dabei werden die Werte, die ignoriert werden sollen durch 0.0 ersetzt.'''
+    def data_boxes(self,pldat,box_list):
+        '''Nehme pldat und, um die Daten auf die Boxen einzuschränken. Dabei werden die Werte, die ignoriert werden sollen durch 0.0 ersetzt.
+        box_data wird zurückgegeben.'''
         # Erster Index von pdat müsste die Zeitreihe sein, der zweite der Energie-Bin.
         # [[[timelow,timeup],[energylow,energyup]],[[timelow,timeup],[energylow,energyup]]]
-        # for pdat in pldat:
-        #     for 
+        box_data = []
+        for pdat in pldat:
+            ayuda = np.zeros(shape=(len(pdat),len(pdat.T)),dtype='float')
+            for box in box_list:
+                tlow = box[0][0]
+                tup = box[0][1]
+                elow = box[1][0]
+                eup = box[1][1]
+                # Loope erst durch die entsprechende Zeitreihe und dann jeweils durch die Energiebins
+                for t in range(tlow,tup+1):
+                    for e in range(elow,eup+1):
+                        ayuda[t][e] = pdat[t][e]
+            box_data.append(ayuda)
+        return box_data
             
 
     def step_plot(self,xlabel,ylabel,title):
@@ -366,14 +379,20 @@ class STEP:
                 plt.savefig(filename)
         print('Plotted ' + filename + ' successfully.')
 
-    def evolution_energy_means(self, filename, ebins=ebins,res = '1min', head = 0, period = None, window_width = 5, save = False, norm = False, overflow = True, esquare = False):
+    def evolution_energy_means(self, filename, ebins=ebins,res = '1min', head = 0, period = None, window_width = 5, save = False, norm = False, overflow = True, esquare = False, box_list = False):
         '''Übergebe period und Zeitfensterbreite. Intergriere die jeweiligen Energien in den Zeitfenstern und stelle die Entwicklung der means für die einzelnen Pixel da.'''
         i = 0
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
         while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
             window = [period[0] + dt.timedelta(minutes=i*window_width), period[0] + dt.timedelta(minutes=(i+1)*window_width)]
-            pldat, pltime, vmax = self.data_prep(ebins,res,head,window,norm,overflow,esquare)
+
+            if type(box_list) == list:
+                little_helper = self.data_prep(ebins,res,head,window,norm,overflow,esquare)[0]
+                pldat = self.data_boxes(little_helper,box_list)
+            else:
+                pldat = self.data_prep(ebins,res,head,window,norm,overflow,esquare)[0]
+
             pixel_means[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
             
             # Berechnung der Mittelwerte:

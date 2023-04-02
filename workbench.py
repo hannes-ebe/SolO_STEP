@@ -20,12 +20,23 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
        137.216, 149.504, 162.816, 178.176, 194.56 , 211.968, 230.4  ,
        372.736])
 
-# dat = STEP('data/',2021,12,4)
+dat = STEP('data/',2021,12,4)
+box_list = [[[20,40],[25,35]],[[40,60],[15,25]]]
 
-# pldat, pltime, vmax = dat.data_prep(ebins,res = '1min', head = 0, period = [dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)], norm = 'tmax', overflow = True, esquare = False)
+pldat, pltime, vmax = dat.data_prep(ebins,res = '1min', head = 0, period = [dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)], norm = 'tmax', overflow = True, esquare = False)
+box_data = dat.data_boxes(pldat,box_list)
 
-# pdat = pldat[4]
-# ptime = np.append(pltime[4],pltime[4][-1]+dt.timedelta(seconds=60))
+pdat = pldat[4]
+ptime = np.append(pltime[4],pltime[4][-1]+dt.timedelta(seconds=60))
+
+print(len(pldat[4]))
+print(len(box_data[4]))
+
+for i in range(19,62):
+       print(box_data[4][i])
+
+# print(pldat)
+# print(len(pldat))
 
 # print(pdat)
 # print(len(pdat))
@@ -39,5 +50,5 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
 
 # print(len(ebins))
 
-a = np.array([0.0,0.0,2.0,3.4,0.0])
-print(np.mean(a))
+# a = np.zeros((181,56),dtype='float')
+# print(len(a.T))

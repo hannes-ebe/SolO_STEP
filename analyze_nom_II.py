@@ -27,7 +27,7 @@ hmap = mpl.cm.seismic
 class STEP:
     '''Lädt STEP-Daten zur anschließenden Analyse'''
 
-    def __init__(self,rpath,year,month,day,lastofmonth=False):
+    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',lastofmonth=False):
         # Loading data
         if lastofmonth:
             if month!=12:
@@ -392,13 +392,11 @@ class STEP:
             pldat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
 
         while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
-            window = [period[0] + dt.timedelta(minutes=i*window_width), period[0] + dt.timedelta(minutes=(i+1)*window_width)]
-
             pixel_means[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
             
             # Berechnung der Mittelwerte:
             for k in range(1,16):
-                pdat = pldat[k]
+                pdat = pldat[k][i*window_width:(i+1)*window_width]
                 integral = np.sum(pdat,axis=0)
                 # calculating mean
                 mean = 0.0

@@ -424,9 +424,10 @@ class STEP:
         print('Plotted evo_energy_means_pixels_' + filename + ' successfully.')
         
         
-    def evolution_energy_means_combined(self, filename, ebins=ebins,res = '1min', head = 0, period = None, window_width = 5, pixel_list = [i for i in range(1,16)], save = False, norm = False, overflow = True, esquare = False, box_list = False):
+    def evolution_energy_means_combined(self, filename, ebins=ebins,res = '1min', head = 0, period = None, window_width = 5, pixel_list = [i for i in range(1,16)], save = False, norm = False, overflow = True, esquare = False, box_list = False, norm_pixel=4):
         '''Übergebe period und Zeitfensterbreite. Intergriere die jeweiligen Energien in den Zeitfenstern und stelle die Entwicklung der means für die angegebenen Pixel
-        in einem Plot dar. Bei minütlicher Auflösung entspricht window_width von 5 Einträgen fünf Minuten.'''
+        in einem Plot dar. Bei minütlicher Auflösung entspricht window_width von 5 Einträgen fünf Minuten. Normiere auf bestimmten norm_pixel.
+        Der Normierungspixel muss in der Pixelliste enthalten sein.'''
         i = 0
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
@@ -451,12 +452,23 @@ class STEP:
                 mean = mean/np.sum(integral)
                 pixel_means[k].append(mean)
             i +=1
+            
+        if norm_pixel != None:
+            # Normierung
+            for k in pixel_list:
+                pixel_means[k] = np.array(pixel_means[k])/np.array(pixel_means[norm_pixel])
         
         fig = plt.figure(figsize=(9,8))
-        plt.title('Evolution of mean of energy distribution for head ' + str(head) + '\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps)')
+        if norm_pixel != None:
+            plt.title('Evolution of mean of energy distribution for head ' + str(head) + '\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps, normed to pixel ' + str(norm_pixel) + ')')
+        else:
+            plt.title('Evolution of mean of energy distribution for head ' + str(head) + '\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps)')
         plt.xlabel('Time')
-        plt.ylabel('Mean of energy distribution [keV]')
-        plt.yscale('log')
+        if norm_pixel != None:
+            plt.ylabel('Mean of energy distribution normed to pixel ' + str(norm_pixel))
+        else:
+            plt.ylabel('Mean of energy distribution [keV]')
+            plt.yscale('log')
         plt.tick_params(axis='x',labelrotation=45)
         
         for i in pixel_list:
@@ -474,11 +486,17 @@ class STEP:
         print('Plotted evo_energy_means_combined_' + filename + ' successfully.')
 
 
-    def evolution_energy_means_ts(self, filename, head, norm, save, period, box_list, pixel_list):
+    def evolution_energy_means_ts(self, filename, head, norm, save, period, box_list, pixel_list, norm_pixel,close=False):
         '''Kombiniere Plots der Zeitreihe und der Energiemittelwerte für bestimmte Boxen. filename gilt für den Mittelwertsplot.'''
         self.evolution_energy_means_pixels(filename=filename,norm=norm,save=save,period=period,box_list=box_list)
-        self.evolution_energy_means_combined(filename=filename,norm=norm,pixel_list=pixel_list,save=save,period=period,box_list=box_list)
+        if close:
+            plt.close('all')
+        self.evolution_energy_means_combined(filename=filename,norm=norm,pixel_list=pixel_list,save=save,period=period,box_list=box_list,norm_pixel=norm_pixel)
+        if close:
+            plt.close('all')
         self.plot_ts(period=period, head=head, save=save, norm=norm,box_list=box_list)
+        if close:
+            plt.close('all')
     
 
     def landau(self,x,A,B,C,D):

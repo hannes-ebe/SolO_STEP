@@ -379,7 +379,7 @@ class STEP:
                 plt.savefig(filename)
         print('Plotted ' + filename + ' successfully.')
 
-    def evolution_energy_means(self, filename, ebins=ebins,res = '1min', head = 0, period = None, window_width = 5, save = False, norm = False, overflow = True, esquare = False, box_list = False):
+    def evolution_energy_means_pixels(self, filename, ebins=ebins,res = '1min', head = 0, period = None, window_width = 5, save = False, norm = False, overflow = True, esquare = False, box_list = False):
         '''Übergebe period und Zeitfensterbreite. Intergriere die jeweiligen Energien in den Zeitfenstern und stelle die Entwicklung der means für die einzelnen Pixel da.
         Bei minütlicher Auflösung entspricht window_width von 5 Einträgen fünf Minuten.'''
         i = 0
@@ -418,15 +418,66 @@ class STEP:
             
         if save:
             if type(save) == str:
-                plt.savefig(save + filename)
+                plt.savefig(save + 'evo_energy_means_pixels_' + filename)
             else:
-                plt.savefig(filename)
-        print('Plotted ' + filename + ' successfully.')
+                plt.savefig('evo_energy_means_pixels_' + filename)
+        print('Plotted evo_energy_means_pixels_' + filename + ' successfully.')
+        
+        
+    def evolution_energy_means_combined(self, filename, ebins=ebins,res = '1min', head = 0, period = None, window_width = 5, pixel_list = [i for i in range(1,16)], save = False, norm = False, overflow = True, esquare = False, box_list = False):
+        '''Übergebe period und Zeitfensterbreite. Intergriere die jeweiligen Energien in den Zeitfenstern und stelle die Entwicklung der means für die angegebenen Pixel
+        in einem Plot dar. Bei minütlicher Auflösung entspricht window_width von 5 Einträgen fünf Minuten.'''
+        i = 0
+        pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
+        
+        if type(box_list) == list:
+            little_helper = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
+            pldat = self.data_boxes(little_helper,box_list)
+        else:
+            pldat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
+
+        while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
+            pixel_means[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
+            
+            # Berechnung der Mittelwerte:
+            for k in pixel_list:
+                pdat = pldat[k][i*window_width:(i+1)*window_width]
+                integral = np.sum(pdat,axis=0)
+                # calculating mean
+                mean = 0.0
+                for j in range(len(integral)):
+                    # Für Bestimmung des Mittelwertes der Verteilung wird Mitte der Bins gewählt
+                    mean += integral[j]*0.5*(ebins[j+1]+ebins[j])
+                mean = mean/np.sum(integral)
+                pixel_means[k].append(mean)
+            i +=1
+        
+        fig = plt.figure(figsize=(9,8))
+        plt.title('Evolution of mean of energy distribution for head ' + str(head) + '\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps)')
+        plt.xlabel('Time')
+        plt.ylabel('Mean of energy distribution [keV]')
+        plt.yscale('log')
+        plt.tick_params(axis='x',labelrotation=45)
+        
+        for i in pixel_list:
+            plt.plot(pixel_means[0],pixel_means[i],label='Pixel ' + str(i))
+        plt.axhline(ebins[8],color='firebrick')
+        plt.axhline(ebins[40],color='firebrick', label='Energy range of STEP')
+            
+        plt.legend()
+            
+        if save:
+            if type(save) == str:
+                plt.savefig(save + 'evo_energy_means_combined_' + filename)
+            else:
+                plt.savefig('evo_energy_means_combined_' + filename)
+        print('Plotted evo_energy_means_combined_' + filename + ' successfully.')
 
 
-    def evolution_energy_means_ts(self, filename, head, norm, save, period, box_list):
+    def evolution_energy_means_ts(self, filename, head, norm, save, period, box_list, pixel_list):
         '''Kombiniere Plots der Zeitreihe und der Energiemittelwerte für bestimmte Boxen. filename gilt für den Mittelwertsplot.'''
-        self.evolution_energy_means(filename=filename,norm=norm,save=save,period=period,box_list=box_list)
+        self.evolution_energy_means_pixels(filename=filename,norm=norm,save=save,period=period,box_list=box_list)
+        self.evolution_energy_means_combined(filename=filename,norm=norm,pixel_list=pixel_list,save=save,period=period,box_list=box_list)
         self.plot_ts(period=period, head=head, save=save, norm=norm,box_list=box_list)
     
 

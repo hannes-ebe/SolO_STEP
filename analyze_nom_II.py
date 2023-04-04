@@ -453,12 +453,14 @@ class STEP:
                 pixel_means[k].append(mean)
             i +=1
             
+        fig = plt.figure(figsize=(9,8))            
         if norm_pixel != None:
             # Normierung
+            norm_factor = np.array(pixel_means[norm_pixel])   # ist tatsächlich ein array
             for k in pixel_list:
-                pixel_means[k] = np.array(pixel_means[k])/np.array(pixel_means[norm_pixel])
+                pixel_means[k] = np.array(pixel_means[k])/norm_factor
+                plt.plot(pixel_means[0],pixel_means[k],label='Pixel ' + str(k))
         
-        fig = plt.figure(figsize=(9,8))
         if norm_pixel != None:
             plt.title('Evolution of mean of energy distribution for head ' + str(head) + '\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps, normed to pixel ' + str(norm_pixel) + ')')
         else:
@@ -469,12 +471,9 @@ class STEP:
         else:
             plt.ylabel('Mean of energy distribution [keV]')
             plt.yscale('log')
+            plt.axhline(ebins[8],color='firebrick')
+            plt.axhline(ebins[40],color='firebrick', label='Energy range of STEP')
         plt.tick_params(axis='x',labelrotation=45)
-        
-        for i in pixel_list:
-            plt.plot(pixel_means[0],pixel_means[i],label='Pixel ' + str(i))
-        plt.axhline(ebins[8],color='firebrick')
-        plt.axhline(ebins[40],color='firebrick', label='Energy range of STEP')
             
         plt.legend()
             
@@ -488,9 +487,9 @@ class STEP:
 
     def evolution_energy_means_ts(self, filename, head, norm, save, period, box_list, pixel_list, norm_pixel,close=False):
         '''Kombiniere Plots der Zeitreihe und der Energiemittelwerte für bestimmte Boxen. filename gilt für den Mittelwertsplot.'''
-        self.evolution_energy_means_pixels(filename=filename,norm=norm,save=save,period=period,box_list=box_list)
-        if close:
-            plt.close('all')
+        # self.evolution_energy_means_pixels(filename=filename,norm=norm,save=save,period=period,box_list=box_list)
+        # if close:
+        #     plt.close('all')
         self.evolution_energy_means_combined(filename=filename,norm=norm,pixel_list=pixel_list,save=save,period=period,box_list=box_list,norm_pixel=norm_pixel)
         if close:
             plt.close('all')

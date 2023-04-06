@@ -140,7 +140,7 @@ class STEP:
 
         return pldat, pltime, vmax
     
-    def data_boxes(self,pldat,box_list):
+    def data_boxes(self,pldat,pltime,box_list):
         '''Nehme pldat und, um die Daten auf die Boxen einzuschränken. Dabei werden die Werte, die ignoriert werden sollen durch 0.0 ersetzt.
         box_data wird zurückgegeben.'''
         # Erster Index von pdat müsste die Zeitreihe sein, der zweite der Energie-Bin.
@@ -153,6 +153,12 @@ class STEP:
                 tup = box[0][1]
                 elow = box[1][0]
                 eup = box[1][1]
+
+                # Beschleunigung durch Nutzung von Masken???
+                # Genauer ansehen, wenn ich in Laufzeitprobleme laufe...
+                # Code auf jeden Fall schon so angepasst, dass data_boxes time bekommt
+                # mask = ()
+
                 # Loope erst durch die entsprechende Zeitreihe und dann jeweils durch die Energiebins
                 for t in range(tlow,tup+1):
                     for e in range(elow,eup+1):
@@ -386,8 +392,8 @@ class STEP:
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
         if type(box_list) == list:
-            little_helper = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
-            pldat = self.data_boxes(little_helper,box_list)
+            little_helper_dat, little_helper_time, little_helper_vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
+            pldat = self.data_boxes(little_helper_dat,little_helper_time,box_list)
         else:
             pldat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
 
@@ -432,8 +438,8 @@ class STEP:
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
         if type(box_list) == list:
-            little_helper = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
-            pldat = self.data_boxes(little_helper,box_list)
+            little_helper_dat, little_helper_time, little_helper_vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
+            pldat = self.data_boxes(little_helper_dat,little_helper_time,box_list)
         else:
             pldat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
 

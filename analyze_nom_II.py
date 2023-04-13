@@ -489,6 +489,68 @@ class STEP:
             else:
                 plt.savefig('evo_energy_means_combined_' + filename)
         print('Plotted evo_energy_means_combined_' + filename + ' successfully.')
+        
+    def energy_mean_deviation_against_energy(self, filename, ebins=ebins,res = '1min', head = 0, period = None, window_width = 5, pixel_list = [i for i in range(1,16)], save = False, norm = False, overflow = True, esquare = False, box_list = False, norm_pixel=4):
+        '''Abweichungen der Mittelwerte aufgetragen gegen die Energie (Mittelwerte des Normierungspixels)'''
+        # Berechne die Mittelwerte für alle Pixel, bzw. die Abweichung vom Referenzpixel. 
+        # Plotte Abweichungen der einzelnen Pixel gegen die Mittelwerte vom Referenzpixel
+        i = 0
+        pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
+        
+        if type(box_list) == list:
+            little_helper_dat, little_helper_time, little_helper_vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
+            pldat = self.data_boxes(little_helper_dat,little_helper_time,box_list)
+        else:
+            pldat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
+
+        while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
+            pixel_means[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
+            
+            # Berechnung der Mittelwerte:
+            for k in pixel_list:
+                pdat = pldat[k][i*window_width:(i+1)*window_width]
+                integral = np.sum(pdat,axis=0)
+                # calculating mean
+                mean = 0.0
+                for j in range(len(integral)):
+                    # Für Bestimmung des Mittelwertes der Verteilung wird Mitte der Bins gewählt
+                    mean += integral[j]*0.5*(ebins[j+1]+ebins[j])
+                mean = mean/np.sum(integral)
+                pixel_means[k].append(mean)
+            i +=1
+            
+        fig = plt.figure(figsize=(9,8))            
+        if norm_pixel != None:
+            # Normierung
+            norm_factor = np.array(pixel_means[norm_pixel])   # ist tatsächlich ein array
+            for k in pixel_list:
+                if k!= norm_pixel:
+                    pixel_means[k] = np.array(pixel_means[k])/norm_factor
+                    plt.plot(pixel_means[norm_pixel],pixel_means[k],label='Pixel ' + str(k))
+        
+        if norm_pixel != None:
+            plt.title('Deviation of mean of energy distribution for head ' + str(head) + '\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps, normed to pixel ' + str(norm_pixel) + ')')
+        else:
+            plt.title('Deviation of mean of energy distribution for head ' + str(head) + '\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps)')
+        plt.xlabel('Mean of energy distribution for pixel %s [keV]' % norm_pixel)
+        if norm_pixel != None:
+            plt.ylabel('Mean of energy distribution normed to pixel ' + str(norm_pixel))
+        else:
+            plt.ylabel('Mean of energy distribution [keV]')
+            plt.yscale('log')
+            plt.axhline(ebins[8],color='firebrick')
+            plt.axhline(ebins[40],color='firebrick', label='Energy range of STEP')
+        plt.xscale('log')
+            
+        plt.legend()
+            
+        if save:
+            if type(save) == str:
+                plt.savefig(save + 'deviation_energy_means_combined_' + filename)
+            else:
+                plt.savefig('deviation_energy_means_combined_' + filename)
+        print('Plotted deviation_energy_means_combined_' + filename + ' successfully.')
+
 
 
     def evolution_energy_means_ts(self, filename, head, norm, save, period, box_list, pixel_list, norm_pixel,close=False):
@@ -497,6 +559,9 @@ class STEP:
         # if close:
         #     plt.close('all')
         self.evolution_energy_means_combined(filename=filename,norm=norm,pixel_list=pixel_list,save=save,period=period,box_list=box_list,norm_pixel=norm_pixel)
+        if close:
+            plt.close('all')
+        self.energy_mean_deviation_against_energy(filename=filename,norm=norm,pixel_list=pixel_list,save=save,period=period,box_list=box_list,norm_pixel=norm_pixel)
         if close:
             plt.close('all')
         self.plot_ts(period=period, head=head, save=save, norm=norm,box_list=box_list)

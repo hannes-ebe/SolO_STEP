@@ -8,6 +8,9 @@ import matplotlib.dates as mdates
 import load_nom_II as ld
 import plot_nom_II as pt
 
+from PIL import Image
+import glob
+
 from scipy.optimize import curve_fit
 
 ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
@@ -521,12 +524,16 @@ class STEP:
             
         fig = plt.figure(figsize=(9,8))            
         if norm_pixel != None:
+            #Sortierung per argsort, wird bei plot gebraucht
+            ind = np.argsort(pixel_means[norm_pixel])
+            
             # Normierung
             norm_factor = np.array(pixel_means[norm_pixel])   # ist tatsächlich ein array
+            pixel_means[norm_pixel] = np.array(pixel_means[norm_pixel]) 
             for k in pixel_list:
                 if k!= norm_pixel:
                     pixel_means[k] = np.array(pixel_means[k])/norm_factor
-                    plt.plot(pixel_means[norm_pixel],pixel_means[k],label='Pixel ' + str(k))
+                    plt.plot(pixel_means[norm_pixel][ind],pixel_means[k][ind],label='Pixel ' + str(k))
         
         if norm_pixel != None:
             plt.title('Deviation of mean of energy distribution for head ' + str(head) + '\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps, normed to pixel ' + str(norm_pixel) + ')')
@@ -567,7 +574,82 @@ class STEP:
         self.plot_ts(period=period, head=head, save=save, norm=norm,box_list=box_list)
         if close:
             plt.close('all')
+            
+    def distribution_ring(self, filename, title, head, norm, save, period, box_list, norm_pixel, res = '1min', overflow = True, esquare = False,window_width = 5, close=False, sorted_by_energy=False):
+        '''Darstellung von means der einzelnen Pixel als GIF. Es soll die ringförmige Verteilung deutlich werden.'''
+        
+        i = 0
+        pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
+        
+        if type(box_list) == list:
+            little_helper_dat, little_helper_time, little_helper_vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
+            pldat = self.data_boxes(little_helper_dat,little_helper_time,box_list)
+        else:
+            pldat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
+
+        while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
+            pixel_means[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
+            
+            # Berechnung der Mittelwerte:
+            for k in [i for i in range(1,16)]:
+                pdat = pldat[k][i*window_width:(i+1)*window_width]
+                integral = np.sum(pdat,axis=0)
+                # calculating mean
+                mean = 0.0
+                for j in range(len(integral)):
+                    # Für Bestimmung des Mittelwertes der Verteilung wird Mitte der Bins gewählt
+                    mean += integral[j]*0.5*(ebins[j+1]+ebins[j])
+                mean = mean/np.sum(integral)
+                pixel_means[k].append(mean)
+            i +=1
+            
+            
+        if sorted_by_energy:
+            ind = np.argsort(pixel_means[norm_pixel])
+        else:
+            ind = np.array(i for i in range(len(pixel_means[norm_pixel])))
+            
+        norm_factor = np.array(pixel_means[norm_pixel]) 
+        for k in range(1,16):
+            pixel_means[k] = np.array(pixel_means[k])/norm_factor
+        
+        # Plotting
+        x_corners = [0,1,2,3,4,5]
+        y_corners = [0,1,2,3]
+        for k in range(len(pixel_means[1])):
+            a = [pixel_means[j][ind][k] for j in range(1,6)]
+            b = [pixel_means[j][ind][k] for j in range(6,11)]
+            c = [pixel_means[j][ind][k] for j in range(11,16)]        
+            data_means = np.array([c,b,a])
+            
+            fig, ax = plt.subplots(1,1,figsize=(8,8))
+            
+            tmp = ax.pcolormesh(x_corners,y_corners,data_means)
+            plt.colorbar(tmp)
+            ax.get_xaxis().set_visible(False)
+            ax.get_yaxis().set_visible(False)
+            
+            if sorted_by_energy == True:
+                ax.set_title(title + f'\n(head {head}, {window_width} minute steps, normed to pixel {norm_pixel})\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + f'\n Mean Energy of Pixel {norm_pixel}: ' + str(norm_factor[ind][k]) + ' [keV]')
+            else:
+                ax.set_title(title + f'\n(head {head}, {window_width} minute steps, normed to pixel {norm_pixel})\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + f'\n Mean Energy of Pixel {norm_pixel}' + str(pixel_means[0][ind][k]))
     
+            plt.savefig('gif_images/image' + str(k) + '.png')
+            
+            if close:
+                plt.close('all')
+        
+        # Erstellen des GIF's
+        frames = []
+        imgs = glob.glob("gif_images/image*.png")
+        for i in imgs:
+            new_frame = Image.open(i)
+            frames.append(new_frame)
+
+        # Save the png images into a GIF file that loops forever
+        frames[0].save(f'gif/{filename}.gif', format='GIF', append_images=frames[1:], save_all=True, duration=500, loop=0)
+        print('Created GIF successfully!')
+        
 
     def landau(self,x,A,B,C,D):
         return A/np.sqrt(2*np.pi)*np.exp(-B*0.5*((x+C) + np.exp(-(x+C)))) + D

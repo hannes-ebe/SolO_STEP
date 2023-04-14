@@ -21,8 +21,10 @@ pixel_list = [i for i in range(1,16)] # [4,9,14]
 # dat.evolution_energy_means(filename='test_evolution.png',norm='tmax',save='etracks/',period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)],box_list=box_list)
 # dat.plot_ts(period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)], head=0, save='etracks/', norm='tmax',box_list=box_list)
 
-dat.evolution_energy_means_ts(filename='test_evolution.png',head=0,norm='tmax',save='etracks/',period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)],box_list=box_list,pixel_list=pixel_list,norm_pixel=4,close=True)
+# dat.evolution_energy_means_ts(filename='test_evolution.png',head=0,norm='tmax',save='etracks/',period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)],box_list=box_list,pixel_list=pixel_list,norm_pixel=3,close=True)
 # dat.evolution_energy_means_ts(filename='test_evolution_2.png',head=0,norm='tmax',save='etracks/v2',period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)],box_list=box_list_2,pixel_list=pixel_list,norm_pixel=4,close=True)
+
+dat.distribution_ring(filename='Test', title='Mean of energy sorted by energy of pixel 3', head=0, norm='tmax', save='etracks/', period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)],box_list=box_list, norm_pixel = 3, res = '1min', overflow = True, esquare = False,window_width = 5, close=True, sorted_by_energy=True)
 
 
 # dat = STEP(2021,12,5)

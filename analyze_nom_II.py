@@ -7,6 +7,7 @@ import datetime as dt
 import matplotlib.dates as mdates
 import load_nom_II as ld
 import plot_nom_II as pt
+import math
 
 from PIL import Image
 import glob
@@ -534,6 +535,8 @@ class STEP:
                 if k!= norm_pixel:
                     pixel_means[k] = np.array(pixel_means[k])/norm_factor
                     plt.plot(pixel_means[norm_pixel][ind],pixel_means[k][ind],label='Pixel ' + str(k))
+                else:
+                    plt.axhline(1.0,label='Pixel ' + str(norm_pixel))
         
         if norm_pixel != None:
             plt.title('Deviation of mean of energy distribution for head ' + str(head) + '\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + ' (' + str(window_width) + ' minute steps, normed to pixel ' + str(norm_pixel) + ')')
@@ -610,11 +613,17 @@ class STEP:
             ind = np.array([i for i in range(len(pixel_means[norm_pixel]))])
             
         norm_factor = np.array(pixel_means[norm_pixel]) 
+        vmin = 1.0
+        vmax = 1.0
         for k in range(0,16):
             if k == 0:
                 pixel_means[k] = np.array(pixel_means[k])
             else:
                 pixel_means[k] = np.array(pixel_means[k])/norm_factor
+                if max(pixel_means[k]) > vmax:
+                    vmax = max(pixel_means[k])
+                if min(pixel_means[k]) < vmin:
+                    vmin = min(pixel_means[k])
         
         # Plotting
         x_corners = [0,1,2,3,4,5]
@@ -625,9 +634,9 @@ class STEP:
             c = [pixel_means[j][ind][k] for j in range(11,16)]        
             data_means = np.array([c,b,a])
             
-            fig, ax = plt.subplots(1,1,figsize=(8,8))
+            fig, ax = plt.subplots(1,1,figsize=(8,7))
             
-            tmp = ax.pcolormesh(x_corners,y_corners,data_means)
+            tmp = ax.pcolormesh(x_corners,y_corners,data_means,vmin=vmin,vmax=vmax)
             plt.colorbar(tmp)
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
@@ -637,7 +646,11 @@ class STEP:
             else:
                 ax.set_title(title + f'\n(head {head}, {window_width} minute steps, normed to pixel {norm_pixel})\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + f'\n Time: ' + str(pixel_means[0][ind][k]))
     
-            plt.savefig('gif_images/image' + str(k) + '.png')
+            # Quick and dirty führende Nullen für korrekte Sortierung
+            if k < 10:
+                plt.savefig('gif_images/image0' + str(k) + '.png')
+            else:
+                plt.savefig('gif_images/image' + str(k) + '.png')
             
             if close:
                 plt.close('all')
@@ -645,6 +658,7 @@ class STEP:
         # Erstellen des GIF's
         frames = []
         imgs = glob.glob("gif_images/image*.png")
+        imgs.sort()
         for i in imgs:
             new_frame = Image.open(i)
             frames.append(new_frame)
@@ -652,8 +666,11 @@ class STEP:
         # Save the png images into a GIF file that loops forever
         frames[0].save(f'gif/{filename}.gif', format='GIF', append_images=frames[1:], save_all=True, duration=500, loop=0)
         print('Created GIF successfully!')
-        print(imgs)
         
+    def wrapper_distribution_ring(self,filename,head,norm,save,period,box_list,norm_pixel,res = '1min', overflow = True, esquare = False,window_width = 5, close=True):
+       self.distribution_ring(filename='pixel_sorted_energy_' + filename, title='Mean of energy sorted by energy of pixel {norm_pixel}', head=head, norm=norm, save=save, period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)],box_list=box_list, norm_pixel = 3, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=True)
+       self.distribution_ring(filename='pixel_ring_ts_' + filename, title='Mean of energy (time series)', head=0, norm='tmax', save='etracks/', period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)],box_list=box_list, norm_pixel = 3, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=False)   
+
 
     def landau(self,x,A,B,C,D):
         return A/np.sqrt(2*np.pi)*np.exp(-B*0.5*((x+C) + np.exp(-(x+C)))) + D

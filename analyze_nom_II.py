@@ -620,10 +620,10 @@ class STEP:
                 pixel_means[k] = np.array(pixel_means[k])
             else:
                 pixel_means[k] = np.array(pixel_means[k])/norm_factor
-                if max(pixel_means[k]) > vmax:
-                    vmax = max(pixel_means[k])
-                if min(pixel_means[k]) < vmin:
-                    vmin = min(pixel_means[k])
+                if np.nanmax(pixel_means[k]) > vmax:
+                    vmax = np.nanmax(pixel_means[k])
+                if np.nanmin(pixel_means[k]) < vmin:
+                    vmin = np.nanmin(pixel_means[k])
         
         # Plotting
         x_corners = [0,1,2,3,4,5]

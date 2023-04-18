@@ -607,11 +607,14 @@ class STEP:
         if sorted_by_energy:
             ind = np.argsort(pixel_means[norm_pixel])
         else:
-            ind = np.array(i for i in range(len(pixel_means[norm_pixel])))
+            ind = np.array([i for i in range(len(pixel_means[norm_pixel]))])
             
         norm_factor = np.array(pixel_means[norm_pixel]) 
-        for k in range(1,16):
-            pixel_means[k] = np.array(pixel_means[k])/norm_factor
+        for k in range(0,16):
+            if k == 0:
+                pixel_means[k] = np.array(pixel_means[k])
+            else:
+                pixel_means[k] = np.array(pixel_means[k])/norm_factor
         
         # Plotting
         x_corners = [0,1,2,3,4,5]
@@ -630,9 +633,9 @@ class STEP:
             ax.get_yaxis().set_visible(False)
             
             if sorted_by_energy == True:
-                ax.set_title(title + f'\n(head {head}, {window_width} minute steps, normed to pixel {norm_pixel})\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + f'\n Mean Energy of Pixel {norm_pixel}: ' + str(norm_factor[ind][k]) + ' [keV]')
+                ax.set_title(title + f'\n(head {head}, {window_width} minute steps, normed to pixel {norm_pixel})\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + f'\n Mean Energy of Pixel {norm_pixel}: ' + str(round(norm_factor[ind][k],2)) + ' [keV]')
             else:
-                ax.set_title(title + f'\n(head {head}, {window_width} minute steps, normed to pixel {norm_pixel})\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + f'\n Mean Energy of Pixel {norm_pixel}' + str(pixel_means[0][ind][k]))
+                ax.set_title(title + f'\n(head {head}, {window_width} minute steps, normed to pixel {norm_pixel})\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + f'\n Time: ' + str(pixel_means[0][ind][k]))
     
             plt.savefig('gif_images/image' + str(k) + '.png')
             
@@ -649,6 +652,7 @@ class STEP:
         # Save the png images into a GIF file that loops forever
         frames[0].save(f'gif/{filename}.gif', format='GIF', append_images=frames[1:], save_all=True, duration=500, loop=0)
         print('Created GIF successfully!')
+        print(imgs)
         
 
     def landau(self,x,A,B,C,D):

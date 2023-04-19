@@ -578,7 +578,7 @@ class STEP:
         if close:
             plt.close('all')
             
-    def distribution_ring(self, filename, title, head, norm, save, period, box_list, norm_pixel, res = '1min', overflow = True, esquare = False,window_width = 5, close=False, sorted_by_energy=False):
+    def distribution_ring(self, filename, title, head, norm, period, box_list, norm_pixel, res = '1min', overflow = True, esquare = False,window_width = 5, close=False, sorted_by_energy=False):
         '''Darstellung von means der einzelnen Pixel als GIF. Es soll die ringförmige Verteilung deutlich werden.'''
         
         i = 0
@@ -667,9 +667,9 @@ class STEP:
         frames[0].save(f'gif/{filename}.gif', format='GIF', append_images=frames[1:], save_all=True, duration=500, loop=0)
         print('Created GIF successfully!')
         
-    def wrapper_distribution_ring(self,filename,head,norm,save,period,box_list,norm_pixel,res = '1min', overflow = True, esquare = False,window_width = 5, close=True):
-       self.distribution_ring(filename='pixel_sorted_energy_' + filename, title='Mean of energy sorted by energy of pixel {norm_pixel}', head=head, norm=norm, save=save, period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)],box_list=box_list, norm_pixel = 3, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=True)
-       self.distribution_ring(filename='pixel_ring_ts_' + filename, title='Mean of energy (time series)', head=0, norm='tmax', save='etracks/', period=[dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)],box_list=box_list, norm_pixel = 3, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=False)   
+    def wrapper_distribution_ring(self,filename,head,norm,period,box_list,norm_pixel,res = '1min', overflow = True, esquare = False,window_width = 5, close=True):
+       self.distribution_ring(filename='pixel_sorted_energy_' + filename, title=f'Mean of energy sorted by energy of pixel {norm_pixel}', head=head, norm=norm, period=period, box_list=box_list, norm_pixel = norm_pixel, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=True)
+       self.distribution_ring(filename='pixel_ring_ts_' + filename, title='Mean of energy (time series)', head=head, norm=norm, period=period,box_list=box_list, norm_pixel = norm_pixel, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=False)   
 
 
     def landau(self,x,A,B,C,D):

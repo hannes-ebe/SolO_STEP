@@ -9,6 +9,10 @@ import load_nom_II as ld
 import plot_nom_II as pt
 from scipy.optimize import curve_fit
 from analyze_nom_II import STEP
+# import os
+# os.environ["CDF_LIB"] = "~/CDF/lib"
+# from spacepy import pycdf
+import cdflib
 
 ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
          3.6  ,   3.92 ,   4.288,   4.672,   5.088,   5.568,   6.08 ,
@@ -20,20 +24,37 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
        137.216, 149.504, 162.816, 178.176, 194.56 , 211.968, 230.4  ,
        372.736])
 
-dat = STEP('data/',2021,12,4)
-box_list = [[[20,40],[25,35]],[[40,60],[15,25]]]
 
-pldat, pltime, vmax = dat.data_prep(ebins,res = '1min', head = 0, period = [dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)], norm = 'tmax', overflow = True, esquare = False)
-box_data = dat.data_boxes(pldat,box_list)
 
-pdat = pldat[4]
-ptime = np.append(pltime[4],pltime[4][-1]+dt.timedelta(seconds=60))
+# Versuch Magnetfelddaten aus cdf zu laden
 
-print(len(pldat[4]))
-print(len(box_data[4]))
+path = '/data/projects/solo/mag/l2_soar/rtn_1minute/2021/solo_L2_mag-rtn-normal-1-minute_20211204_V01.cdf'
 
-for i in range(19,62):
-       print(box_data[4][i])
+cdf = cdflib.CDF(path)
+
+print(cdf)
+
+
+
+
+
+
+
+
+# dat = STEP('data/',2021,12,4)
+# box_list = [[[20,40],[25,35]],[[40,60],[15,25]]]
+
+# pldat, pltime, vmax = dat.data_prep(ebins,res = '1min', head = 0, period = [dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)], norm = 'tmax', overflow = True, esquare = False)
+# box_data = dat.data_boxes(pldat,box_list)
+
+# pdat = pldat[4]
+# ptime = np.append(pltime[4],pltime[4][-1]+dt.timedelta(seconds=60))
+
+# print(len(pldat[4]))
+# print(len(box_data[4]))
+
+# for i in range(19,62):
+#        print(box_data[4][i])
 
 # print(pldat)
 # print(len(pldat))

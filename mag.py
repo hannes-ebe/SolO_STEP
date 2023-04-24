@@ -14,7 +14,7 @@ import os
 from cdflib import CDF,cdfepoch
 
 class MAGdata(object):
-    def __init__(self, path = '/data/ivar/solo/science/mag/', lvl='L2', period = (dt.datetime(2022,1,1),dt.datetime(2022,1,2)), res = None):
+    def __init__(self, path = '/data/projects/solo/mag/l2_soar/rtn_high_time_res/', lvl='L2', period = (dt.datetime(2022,1,1),dt.datetime(2022,1,2)), res = None):
         self.path = path
         self.lvl = lvl
         self.period = period

@@ -9,10 +9,7 @@ import load_nom_II as ld
 import plot_nom_II as pt
 from scipy.optimize import curve_fit
 from analyze_nom_II import STEP
-# import os
-# os.environ["CDF_LIB"] = "~/CDF/lib"
-# from spacepy import pycdf
-import cdflib
+import mag
 
 ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
          3.6  ,   3.92 ,   4.288,   4.672,   5.088,   5.568,   6.08 ,
@@ -30,9 +27,9 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
 
 path = '/data/projects/solo/mag/l2_soar/rtn_1minute/2021/solo_L2_mag-rtn-normal-1-minute_20211204_V01.cdf'
 
-cdf = cdflib.CDF(path)
+dat = mag.MAGdata(period=[dt.datetime(2021,12,4),dt.datetime(2021,12,5)])
 
-print(cdf)
+print(dat)
 
 
 

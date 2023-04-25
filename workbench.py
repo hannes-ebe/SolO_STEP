@@ -25,13 +25,9 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
 
 # Versuch Magnetfelddaten aus cdf zu laden
 
-path = '/data/projects/solo/mag/l2_soar/rtn_1minute/2021/solo_L2_mag-rtn-normal-1-minute_20211204_V01.cdf'
-
 dat = mag.MAGdata(period=[dt.datetime(2021,12,4),dt.datetime(2021,12,5)])
 
-print(dat)
-
-
+dat.pw_ts()
 
 
 

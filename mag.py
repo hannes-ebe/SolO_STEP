@@ -97,10 +97,13 @@ class MAGdata(object):
         for i in range(15):
             v_theta = np.radians(self.fov[i][1])   # Umrechnung in radians für numpy
             v_phi = np.radians(self.fov[i][0])
-            # Umrechnung in Grad ist bedenken
-            self.pw.append((np.arccos(np.sin(v_theta)*np.cos(v_phi)*np.sin(B_theta)*np.cos(B_phi) + np.sin(v_theta)*np.sin(v_phi)*np.sin(B_theta)*np.sin(B_phi) + np.cos(v_theta)*np.cos(B_theta)))/np.pi*180)
+            # Umrechnung in Grad ist zu bedenken
+            # self.pw.append((np.arccos(np.sin(v_theta)*np.cos(v_phi)*np.sin(B_theta)*np.cos(B_phi) + np.sin(v_theta)*np.sin(v_phi)*np.sin(B_theta)*np.sin(B_phi) + np.cos(v_theta)*np.cos(B_theta)))/np.pi*180)
+            # self.pw.append(())
         
         self.pw = np.array(self.pw)
+        
+        
         
     def step_plot(self,xlabel,ylabel,title):
         '''Erzeugt den bekannten STEP-Plot mit allen 16 Pixeln. Gibt Liste mit axes zurück.'''

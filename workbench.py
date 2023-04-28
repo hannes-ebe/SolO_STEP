@@ -9,7 +9,7 @@ import load_nom_II as ld
 import plot_nom_II as pt
 from scipy.optimize import curve_fit
 from analyze_nom_II import STEP
-import mag
+# import mag
 
 ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
          3.6  ,   3.92 ,   4.288,   4.672,   5.088,   5.568,   6.08 ,
@@ -36,42 +36,51 @@ fov = np.array([[-25,24],[-25,12],[-25,0],[-25,-12],[-25,-24],[-35,24],[-35,12],
 
 
 ### Plausibilitätscheck Pitchwinkel-Berechnung ###
+'''Der Winkel \phi gibt die Drehung in der RT-Ebene und \theta in der RN-Ebene. Für die Umrechnung müsste mit v als Länge des Vektors gelten:
+    R = v*cos(phi)*cos(theta)
+    T = v*sin(phi)*cos(theta)
+    N = v*sin(theta)'''
 
-def pw1(v_theta,v_phi,B_theta,B_phi):
-    return (np.arccos(np.sin(v_theta)*np.cos(v_phi)*np.sin(B_theta)*np.cos(B_phi) + np.sin(v_theta)*np.sin(v_phi)*np.sin(B_theta)*np.sin(B_phi) + np.cos(v_theta)*np.cos(B_theta)))/np.pi*180
-
-def pw2(v_theta,v_phi,B_theta,B_phi):
-    return (np.arccos(np.sin(v_phi)*np.cos(v_theta)*np.sin(B_phi)*np.cos(B_theta) + np.sin(v_phi)*np.sin(v_theta)*np.sin(B_phi)*np.sin(B_theta) + np.cos(v_phi)*np.cos(B_phi)))/np.pi*180
+def pw(v_theta,v_phi,B_theta,B_phi):
+    '''Wichtig ist die Normierung zu beachten. Wenn ich die RTN-Koordinaten über die Winkel beschreibe, kann ich die Vorfaktoren 1 setzen. Numpy nimmt die
+    Winkel in Radians'''
+    v_theta = v_theta/360*2*np.pi
+    v_phi = v_phi/360*2*np.pi
+    B_theta = B_theta/360*2*np.pi
+    B_phi = B_phi/360*2*np.pi
+    return (np.arccos(np.cos(v_theta)*np.cos(v_phi)*np.cos(B_theta)*np.cos(B_phi) + np.cos(v_theta)*np.sin(v_phi)*np.cos(B_theta)*np.sin(B_phi) + np.sin(v_theta)*np.sin(B_theta)))/np.pi*180
 
 B_phi = -35
 B_theta = 0
 
-plausibilitätscheck_pw = []
+def plausibility_check(B_phi,B_theta):
 
-for i in range(len(fov)):
-    plausibilitätscheck_pw.append(pw2(fov[i][1],fov[i][0],B_theta,B_phi))
-    
-print(plausibilitätscheck_pw)
+    plausibilitätscheck_pw = []
 
-fig, ax = plt.subplots(1,1,figsize=(8,7))
+    for i in range(len(fov)):
+        plausibilitätscheck_pw.append(pw(fov[i][1],fov[i][0],B_theta,B_phi))
+        
+    print(plausibilitätscheck_pw)
 
-x_corners = [0,1,2,3,4,5]
-y_corners = [0,1,2,3]
-vmin = min(plausibilitätscheck_pw)
-vmax = max(plausibilitätscheck_pw)
-     
-pw_list = np.array([plausibilitätscheck_pw[10:15],plausibilitätscheck_pw[5:10],plausibilitätscheck_pw[0:5]])
-            
-tmp = ax.pcolormesh(x_corners,y_corners,pw_list,vmin=vmin,vmax=vmax)
-plt.colorbar(tmp,label='pitch angle [°]')
-ax.get_xaxis().set_visible(False)
-ax.get_yaxis().set_visible(False)
-ax.set_title('plausibility check of pitch angle calculation')
+    fig, ax = plt.subplots(1,1,figsize=(10,6))
 
-plt.show()
+    x_corners = [0,1,2,3,4,5]
+    y_corners = [0,1,2,3]
+    vmin = min(plausibilitätscheck_pw)
+    vmax = max(plausibilitätscheck_pw)
+        
+    pw_list = np.array([plausibilitätscheck_pw[10:15],plausibilitätscheck_pw[5:10],plausibilitätscheck_pw[0:5]])
+                
+    tmp = ax.pcolormesh(x_corners,y_corners,pw_list,vmin=vmin,vmax=vmax)
+    plt.colorbar(tmp,label='pitch angle [°]')
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+    ax.set_title(r'plausibility check of pitch angle calculation ($\phi_B=' + str(B_phi) + r'°,~\theta_B=' + str(B_theta) + r'°$)')
 
+    plt.savefig(f'plausibility_check/plausibility_check_phi_{B_phi}_theta_{B_theta}.png')
 
-
+for angles in fov:
+    plausibility_check(angles[0],angles[1])
 
 
 # dat = STEP('data/',2021,12,4)

@@ -90,6 +90,10 @@ class MAGdata(object):
         # Lars hat etwas von Normierung geschrieben... Warum??? Müsste es nicht reichen die Winkel im Spacecraft-Frame zu nehmen???
         # Nutze theta und phi für Kugelkoordinaten wie bei Wiki...
         # Umrechnung in Grad nicht vergessen...
+        '''Der Winkel \phi gibt die Drehung in der RT-Ebene und \theta in der RN-Ebene. Für die Umrechnung müsste mit v als Länge des Vektors gelten:
+        R = v*cos(phi)*cos(theta)
+        T = v*sin(phi)*cos(theta)
+        N = v*sin(theta)'''
         B_phi = self.phi
         B_theta = self.theta
         self.pw = []

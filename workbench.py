@@ -43,12 +43,16 @@ fov = np.array([[-25,24],[-25,12],[-25,0],[-25,-12],[-25,-24],[-35,24],[-35,12],
 
 def pw(v_theta,v_phi,B_theta,B_phi):
     '''Wichtig ist die Normierung zu beachten. Wenn ich die RTN-Koordinaten über die Winkel beschreibe, kann ich die Vorfaktoren 1 setzen. Numpy nimmt die
-    Winkel in Radians'''
+    Winkel in Radians. Muss den Spezialfall von Werten größer 1 im arccos abfangen.'''
     v_theta = v_theta/360*2*np.pi
     v_phi = v_phi/360*2*np.pi
     B_theta = B_theta/360*2*np.pi
     B_phi = B_phi/360*2*np.pi
-    return (np.arccos(np.cos(v_theta)*np.cos(v_phi)*np.cos(B_theta)*np.cos(B_phi) + np.cos(v_theta)*np.sin(v_phi)*np.cos(B_theta)*np.sin(B_phi) + np.sin(v_theta)*np.sin(B_theta)))/np.pi*180
+    argument = np.cos(v_theta)*np.cos(v_phi)*np.cos(B_theta)*np.cos(B_phi) + np.cos(v_theta)*np.sin(v_phi)*np.cos(B_theta)*np.sin(B_phi) + np.sin(v_theta)*np.sin(B_theta)
+    if argument > 1.0 and v_theta == B_theta and v_phi == B_phi:
+        argument = 1.0
+    pitchangle = np.arccos(argument)/np.pi*180
+    return pitchangle
 
 B_phi = -35
 B_theta = 0

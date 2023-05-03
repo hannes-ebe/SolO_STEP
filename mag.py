@@ -26,6 +26,7 @@ class MAGdata(object):
         self.B_T = np.zeros((0))
         self.B_N = np.zeros((0))
         self.time = []
+        self.pitchangles = []
         # Blickrichtung der einzelnen Pixel (Phi, Theta):
         self.fov = np.array([[-25,24],[-25,12],[-25,0],[-25,-12],[-25,-24],[-35,24],[-35,12],[-35,0],[-35,-12],[-35,-24],[-45,24],[-45,12],[-45,0],[-45,-12],[-45,-24]])
         
@@ -83,29 +84,34 @@ class MAGdata(object):
         self.phi = np.arctan2(self.B_T,self.B_R)
         self.theta = np.arctan2(self.B_N,np.sqrt(self.B_T**2+self.B_R**2))
         
+    def pw(self,v_phi,v_theta):
+        '''Es ist wichtig die Normierung zu beachten. Wenn ich die RTN-Koordinaten über die Winkel beschreibe, kann ich die Vorfaktoren 1 setzen.
+        Numpy nimmt die Winkel in Radians. Muss den Spezialfall von Werten größer 1 im arccos abfangen Dieser Sonderfall ist hier erstmal ignoriert. 
+        Für das Magnetfeld, werden die Daten des Objekts genommen.
+        Der Winkel \phi gibt die Drehung in der RT-Ebene und \theta in der RN-Ebene.
+        Für die Umrechnung müsste mit v als Länge des Vektors gelten:
+            R = v*cos(phi)*cos(theta)
+            T = v*sin(phi)*cos(theta)
+            N = v*sin(theta)
+        Die Attribute phi und theta beziehen sich bei Lars auf das Magnetfeld.'''
+        v_theta = v_theta/360*2*np.pi
+        v_phi = v_phi/360*2*np.pi
+        B_theta = self.theta/360*2*np.pi
+        B_phi = self.phi/360*2*np.pi
+        argument = np.cos(v_theta)*np.cos(v_phi)*np.cos(B_theta)*np.cos(B_phi) + np.cos(v_theta)*np.sin(v_phi)*np.cos(B_theta)*np.sin(B_phi) + np.sin(v_theta)*np.sin(B_theta)
+        # if argument > 1.0 and v_theta == B_theta and v_phi == B_phi:
+        #     argument = 1.0
+        pitchangle = np.arccos(argument)/np.pi*180
+        return pitchangle
+        
     def _calc_pw(self):
         '''Berechne die Pitchwinkel für die Elektronen, welche auf STEP treffen in erster Näherung.
-        Dafür wird der Winkel zwischen den Blickrichtungen der Pixel und
-        dem Magnetfeld herangezogen.'''
-        # Lars hat etwas von Normierung geschrieben... Warum??? Müsste es nicht reichen die Winkel im Spacecraft-Frame zu nehmen???
-        # Nutze theta und phi für Kugelkoordinaten wie bei Wiki...
-        # Umrechnung in Grad nicht vergessen...
-        '''Der Winkel \phi gibt die Drehung in der RT-Ebene und \theta in der RN-Ebene. Für die Umrechnung müsste mit v als Länge des Vektors gelten:
-        R = v*cos(phi)*cos(theta)
-        T = v*sin(phi)*cos(theta)
-        N = v*sin(theta)'''
-        B_phi = self.phi
-        B_theta = self.theta
-        self.pw = []
-        
+        Dafür wird der Winkel zwischen den Blickrichtungen der Pixel und dem Magnetfeld herangezogen.'''
         for i in range(15):
-            v_theta = np.radians(self.fov[i][1])   # Umrechnung in radians für numpy
-            v_phi = np.radians(self.fov[i][0])
-            # Umrechnung in Grad ist zu bedenken
-            # self.pw.append((np.arccos(np.sin(v_theta)*np.cos(v_phi)*np.sin(B_theta)*np.cos(B_phi) + np.sin(v_theta)*np.sin(v_phi)*np.sin(B_theta)*np.sin(B_phi) + np.cos(v_theta)*np.cos(B_theta)))/np.pi*180)
-            # self.pw.append(())
-        
-        self.pw = np.array(self.pw)
+            v_phi = self.fov[i][0]
+            v_theta = self.fov[i][1]
+            self.pitchangles.append(self.pw(v_phi,v_theta))
+        self.pitchangles = np.array(self.pitchangles)
         
         
         
@@ -140,7 +146,7 @@ class MAGdata(object):
         fig, ax = self.step_plot(r'time', r'$\varphi$ [°]', 'Time series of pitch angle from ' + str(self.period[0]) + ' to ' + str(self.period[1]))
 
         for i in range(1,16):
-            ax[i].scatter(self.time,self.pw[i-1],marker='x')
+            ax[i].scatter(self.time,self.pitchangles[i-1],marker='x')
             ax[i].tick_params(axis='x', labelrotation=90)
         
         plt.show()

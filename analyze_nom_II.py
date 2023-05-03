@@ -8,6 +8,7 @@ import matplotlib.dates as mdates
 import load_nom_II as ld
 import plot_nom_II as pt
 import math
+import mag
 
 from PIL import Image
 import glob
@@ -31,7 +32,8 @@ hmap = mpl.cm.seismic
 class STEP:
     '''Lädt STEP-Daten zur anschließenden Analyse'''
 
-    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',lastofmonth=False):
+    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',lastofmonth=False):
+        '''Magnetfeld wird gleich mitgeladen.'''
         # Loading data
         if lastofmonth:
             if month!=12:
@@ -40,11 +42,20 @@ class STEP:
                 self.itime, self.idata = ld.load_nom(rpath=rpath,period=(dt.datetime(year,month,day),dt.datetime(year+1,1,1)), products=('M','A'))
         else:
             self.itime, self.idata = ld.load_nom(rpath=rpath,period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)), products=('M','A'))
-        print('Data loaded successfully.')
+        print('STEP-Data loaded successfully.')
         
         # Combining data (Main and Auxiliary Product)
         ld.combine_data(self.itime, self.idata)
-        print('Data combined successfully.')
+        print('STEP-Data combined successfully.')
+        
+        # Loading MAG-Data
+        if lastofmonth:
+            if month!=12:
+                self.mag = mag.MAGdata(path = rpath_mag, period = (dt.datetime(year,month,day),dt.datetime(year,month+1,1)))
+            else:
+                self.mag = mag.MAGdata(path = rpath_mag, period = (dt.datetime(year,month,day),dt.datetime(year+1,1,1)))
+        else:
+            self.mag = mag.MAGdata(path = rpath_mag, period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)))
 
     def cut_data(self,t0,t1):
         cdat = {}
@@ -579,7 +590,13 @@ class STEP:
             plt.close('all')
             
     def distribution_ring(self, filename, title, head, norm, period, box_list, norm_pixel, res = '1min', overflow = True, esquare = False,window_width = 5, close=False, sorted_by_energy=False):
-        '''Darstellung von means der einzelnen Pixel als GIF. Es soll die ringförmige Verteilung deutlich werden.'''
+        '''Darstellung von means der einzelnen Pixel und Pitchwinkel als GIF. Es soll die ringförmige Verteilung deutlich werden. Code basiert auf minütlichen Daten!!!'''
+        
+        # Berechnung der Energie-Mittelwerte und Mittelung der Pitchwinkel über Intervalle der Länge window_width
+        
+        # Maske, da ich nur die Magnetfelddaten innerhalb von period brauche:
+        mask = (self.mag.time >= period[0]) * (self.mag.time < period[1])
+        pw = [[] for i in range(15)]
         
         i = 0
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
@@ -590,11 +607,18 @@ class STEP:
         else:
             pldat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
 
+
         while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
+            
             pixel_means[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
             
-            # Berechnung der Mittelwerte:
             for k in [i for i in range(1,16)]:
+                # Mittelung der Pitchwinkel (k-1, da ich keine Zeit im array stehen habe)
+                pw_data = self.mag.pitchangles[k-1][mask]
+                new_pw = np.sum(pw_data[i*window_width:(i+1)*window_width])/window_width
+                pw[k-1].append(new_pw)
+                
+                # Berechnung der Energie-Mittelwerte:
                 pdat = pldat[k][i*window_width:(i+1)*window_width]
                 integral = np.sum(pdat,axis=0)
                 # calculating mean
@@ -615,15 +639,24 @@ class STEP:
         norm_factor = np.array(pixel_means[norm_pixel]) 
         vmin = 1.0
         vmax = 1.0
+        vmin_pw = 1.0
+        vmax_pw = 1.0
         for k in range(0,16):
             if k == 0:
                 pixel_means[k] = np.array(pixel_means[k])
             else:
                 pixel_means[k] = np.array(pixel_means[k])/norm_factor
+                pw[k-1] = np.array(pw[k-1])
                 if np.nanmax(pixel_means[k]) > vmax:
                     vmax = np.nanmax(pixel_means[k])
                 if np.nanmin(pixel_means[k]) < vmin:
                     vmin = np.nanmin(pixel_means[k])
+                if np.nanmax(pw[k-1]) > vmax_pw:
+                    vmax_pw = np.nanmax(pw[k-1])
+                if np.nanmin(pw[k-1]) < vmin_pw:
+                    vmin_pw = np.nanmin(pw[k-1])
+                    
+                    
         
         # Plotting
         x_corners = [0,1,2,3,4,5]
@@ -634,10 +667,17 @@ class STEP:
             c = [pixel_means[j][ind][k] for j in range(11,16)]        
             data_means = np.array([c,b,a])
             
-            fig, ax = plt.subplots(1,1,figsize=(8,7))
+            d = [pw[j-1][ind][k] for j in range(1,6)]
+            e = [pw[j-1][ind][k] for j in range(6,11)]
+            f = [pw[j-1][ind][k] for j in range(11,16)]  
+            pw_list = np.array([f,e,d])
             
+            
+            fig, axes = plt.subplots(2,1,figsize=(10,12))
+            
+            ax = axes[0]
             tmp = ax.pcolormesh(x_corners,y_corners,data_means,vmin=vmin,vmax=vmax)
-            plt.colorbar(tmp)
+            plt.colorbar(tmp,label=f'mean of energy/(mean of energy of pixel {norm_pixel})')
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)
             
@@ -645,6 +685,16 @@ class STEP:
                 ax.set_title(title + f'\n(head {head}, {window_width} minute steps, normed to pixel {norm_pixel})\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + f'\n Mean Energy of Pixel {norm_pixel}: ' + str(round(norm_factor[ind][k],2)) + ' [keV]')
             else:
                 ax.set_title(title + f'\n(head {head}, {window_width} minute steps, normed to pixel {norm_pixel})\nfrom ' + str(period[0]) + ' to ' + str(period[1]) + f'\n Time: ' + str(pixel_means[0][ind][k]))
+            
+            
+            ax = axes[1]
+            tmp = ax.pcolormesh(x_corners,y_corners,pw_list,vmin=vmin_pw,vmax=vmax_pw)
+            plt.colorbar(tmp,label=r'pitch angle $\varphi$ [°]')
+            ax.get_xaxis().set_visible(False)
+            ax.get_yaxis().set_visible(False)
+            ax.set_title(r'Corresponding pitch angles $\varphi$ for the pixels')
+    
+    
     
             # Quick and dirty führende Nullen für korrekte Sortierung
             if k < 10:
@@ -666,6 +716,8 @@ class STEP:
         # Save the png images into a GIF file that loops forever
         frames[0].save(f'gif/{filename}.gif', format='GIF', append_images=frames[1:], save_all=True, duration=500, loop=0)
         print('Created GIF successfully!')
+        
+        
         
     def wrapper_distribution_ring(self,filename,head,norm,period,box_list,norm_pixel,res = '1min', overflow = True, esquare = False,window_width = 5, close=True):
        self.distribution_ring(filename='pixel_sorted_energy_' + filename, title=f'Mean of energy sorted by energy of pixel {norm_pixel}', head=head, norm=norm, period=period, box_list=box_list, norm_pixel = norm_pixel, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=True)

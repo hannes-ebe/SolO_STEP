@@ -44,8 +44,18 @@ pixel_list = [i for i in range(1,16)] # [4,9,14]
 
 
 
+'''Untersuchung von Events zu denen Magnetfeldaten vorliegen'''
 
-# Versuch Magnetfeld mit darzustellen und rauszurechnen...
+'''Ereignisse vor Mitte April 2022'''
+
+dat = STEP(2022,2,7)
+
+box_list=[[[35,65],[12,23]],[[40,85],[8,12]],[[55,100],[2,8]]]
+period=[dt.datetime(2022,2,7,19,30),dt.datetime(2022,2,7,22)]
+
+dat.evolution_energy_means_ts(filename='22_02_07.png',head=-1,norm='tmax',save='etracks_test/',period=period,box_list=box_list,pixel_list = pixel_list,norm_pixel=3)
+dat.wrapper_distribution_ring('22_02_07_electrons', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3)
+
 
 # dat = STEP(2021,12,4)
 
@@ -56,13 +66,13 @@ pixel_list = [i for i in range(1,16)] # [4,9,14]
 # dat.wrapper_distribution_ring('21_12_04_electrons', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3)
 
 
-dat = STEP(2022,11,19)
+# dat = STEP(2022,11,19)
 
-box_list=[[[25,50],[28,35]],[[30,60],[23,28]],[[35,70],[18,23]],[[40,110],[12,18]],[[60,165],[2,12]]]
-period = [dt.datetime(2022,11,19,13,30),dt.datetime(2022,11,19,17,30)]
+# box_list=[[[25,50],[28,35]],[[30,60],[23,28]],[[35,70],[18,23]],[[40,110],[12,18]],[[60,165],[2,12]]]
+# period = [dt.datetime(2022,11,19,13,30),dt.datetime(2022,11,19,17,30)]
 
-dat.evolution_energy_means_ts(filename='22_11_19.png',head=-1,norm='tmax',save='etracks_test/',period=period,box_list=box_list,pixel_list = pixel_list,norm_pixel=3)
-dat.wrapper_distribution_ring('22_11_19_electrons', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3)
+# dat.evolution_energy_means_ts(filename='22_11_19.png',head=-1,norm='tmax',save='etracks_test/',period=period,box_list=box_list,pixel_list = pixel_list,norm_pixel=3)
+# dat.wrapper_distribution_ring('22_11_19_electrons', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3)
 
 
 # dat = STEP(2022,12,1)
@@ -83,13 +93,20 @@ dat.wrapper_distribution_ring('22_11_19_electrons', head=-1, norm='tmax', period
 # dat.wrapper_distribution_ring('22_12_12_electrons', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3)
 
 
-dat = STEP(2022,12,24)
+# dat = STEP(2022,12,24)
 
-box_list=[[[20,35],[35,40]],[[25,40],[30,35]],[[28,50],[23,30]],[[33,58],[17,23]],[[40,64],[12,17]],[[45,75],[8,12]],[[50,80],[2,8]]]
-period = [dt.datetime(2022,12,24,4),dt.datetime(2022,12,24,6)]
+# box_list=[[[20,35],[35,40]],[[25,40],[30,35]],[[28,50],[23,30]],[[33,58],[17,23]],[[40,64],[12,17]],[[45,75],[8,12]],[[50,80],[2,8]]]
+# period = [dt.datetime(2022,12,24,4),dt.datetime(2022,12,24,6)]
 
-dat.evolution_energy_means_ts(filename='22_12_24.png',head=-1,norm='tmax',save='etracks_test/',period=period,box_list=box_list,pixel_list = pixel_list,norm_pixel=3)
-dat.wrapper_distribution_ring('22_12_24_electrons', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3)
+# dat.evolution_energy_means_ts(filename='22_12_24.png',head=-1,norm='tmax',save='etracks_test/',period=period,box_list=box_list,pixel_list = pixel_list,norm_pixel=3)
+# dat.wrapper_distribution_ring('22_12_24_electrons', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3)
+
+
+
+
+
+
+
 
 
 

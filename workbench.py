@@ -32,7 +32,7 @@ fov = np.array([[-25,24],[-25,12],[-25,0],[-25,-12],[-25,-24],[-35,24],[-35,12],
 
 # dat.pw_ts()
 
-
+# Test, ob Git wieder geht...
 
 
 ### Plausibilitätscheck Pitchwinkel-Berechnung ###

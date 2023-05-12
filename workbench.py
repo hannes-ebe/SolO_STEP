@@ -26,13 +26,6 @@ fov = np.array([[-25,24],[-25,12],[-25,0],[-25,-12],[-25,-24],[-35,24],[-35,12],
 
 
 
-# Versuch Magnetfelddaten aus cdf zu laden
-
-# dat = mag.MAGdata(period=[dt.datetime(2021,12,4),dt.datetime(2021,12,5)])
-
-# dat.pw_ts()
-
-# Test, ob Git wieder geht...
 
 
 ### Plausibilitätscheck Pitchwinkel-Berechnung ###
@@ -83,39 +76,16 @@ def plausibility_check(B_phi,B_theta):
 
     plt.savefig(f'plausibility_check/plausibility_check_phi_{B_phi}_theta_{B_theta}.png')
 
-for angles in fov:
-    plausibility_check(angles[0],angles[1])
+# for angles in fov:
+#     plausibility_check(angles[0],angles[1])
 
 
-# dat = STEP('data/',2021,12,4)
-# box_list = [[[20,40],[25,35]],[[40,60],[15,25]]]
 
-# pldat, pltime, vmax = dat.data_prep(ebins,res = '1min', head = 0, period = [dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)], norm = 'tmax', overflow = True, esquare = False)
-# box_data = dat.data_boxes(pldat,box_list)
+### Herausrechnen der Pitchwinkeleffekte aus den Energie-Mittelwerten ###
 
-# pdat = pldat[4]
-# ptime = np.append(pltime[4],pltime[4][-1]+dt.timedelta(seconds=60))
+dat = STEP(2021,12,4)
 
-# print(len(pldat[4]))
-# print(len(box_data[4]))
+box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
+period = [dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)]
 
-# for i in range(19,62):
-#        print(box_data[4][i])
-
-# print(pldat)
-# print(len(pldat))
-
-# print(pdat)
-# print(len(pdat))
-# print(pdat.T)
-# print(len(pdat.T))
-
-# print(ptime)
-# print(len(ptime))
-# print(ptime.T)
-# print(len(ptime.T))
-
-# print(len(ebins))
-
-# a = np.zeros((181,56),dtype='float')
-# print(len(a.T))
+dat.wrapper_distribution_ring('21_12_04_electrons_pw_inverse', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3, correction=True, save='test_pitchangle_correction/')

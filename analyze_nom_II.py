@@ -589,7 +589,15 @@ class STEP:
         if close:
             plt.close('all')
             
-    def distribution_ring(self, filename, title, head, norm, period, box_list, norm_pixel, res = '1min', overflow = True, esquare = False,window_width = 5, close=False, sorted_by_energy=False):
+    def correction_pw(self,norm_value, value):
+        '''Berechnet aus den zwei übergebenen Pitchwinkel-Werten einen Korrekturfaktor, um die Pitchwinkeleffekte zu korrigieren.'''
+        # corr = norm_value/value
+        corr = value/norm_value
+        # corr = np.cos(norm_value)/np.cos(value)
+        # corr = np.cos(value)/np.cos(norm_value)
+        return corr
+            
+    def distribution_ring(self, filename, title, head, norm, period, box_list, norm_pixel, correction = False, save='gif/', res = '1min', overflow = True, esquare = False,window_width = 5, close=False, sorted_by_energy=False):
         '''Darstellung von means der einzelnen Pixel und Pitchwinkel als GIF. Es soll die ringförmige Verteilung deutlich werden. Code basiert auf minütlichen Daten!!!'''
         
         # Berechnung der Energie-Mittelwerte und Mittelung der Pitchwinkel über Intervalle der Länge window_width
@@ -641,20 +649,29 @@ class STEP:
         vmax = 1.0
         vmin_pw = 1.0
         vmax_pw = 1.0
+        
         for k in range(0,16):
             if k == 0:
                 pixel_means[k] = np.array(pixel_means[k])
             else:
-                pixel_means[k] = np.array(pixel_means[k])/norm_factor
+                pixel_means[k] = np.array(pixel_means[k])
                 pw[k-1] = np.array(pw[k-1])
-                if np.nanmax(pixel_means[k]) > vmax:
-                    vmax = np.nanmax(pixel_means[k])
-                if np.nanmin(pixel_means[k]) < vmin:
-                    vmin = np.nanmin(pixel_means[k])
-                if np.nanmax(pw[k-1]) > vmax_pw:
-                    vmax_pw = np.nanmax(pw[k-1])
-                if np.nanmin(pw[k-1]) < vmin_pw:
-                    vmin_pw = np.nanmin(pw[k-1])
+        
+        for k in range(1,16):
+            if correction:
+                corr = self.correction_pw(pw[norm_pixel-1],pw[k-1])
+            else:
+                corr = 1.0
+            pixel_means[k] = pixel_means[k]/norm_factor*corr
+            pw[k-1] = pw[k-1]*corr
+            if np.nanmax(pixel_means[k]) > vmax:
+                vmax = np.nanmax(pixel_means[k])
+            if np.nanmin(pixel_means[k]) < vmin:
+                vmin = np.nanmin(pixel_means[k])
+            if np.nanmax(pw[k-1]) > vmax_pw:
+                vmax_pw = np.nanmax(pw[k-1])
+            if np.nanmin(pw[k-1]) < vmin_pw:
+                vmin_pw = np.nanmin(pw[k-1])
                     
                     
         
@@ -662,6 +679,7 @@ class STEP:
         x_corners = [0,1,2,3,4,5]
         y_corners = [0,1,2,3]
         for k in range(len(pixel_means[1])):
+            
             a = [pixel_means[j][ind][k] for j in range(1,6)]
             b = [pixel_means[j][ind][k] for j in range(6,11)]
             c = [pixel_means[j][ind][k] for j in range(11,16)]        
@@ -714,14 +732,14 @@ class STEP:
             frames.append(new_frame)
 
         # Save the png images into a GIF file that loops forever
-        frames[0].save(f'gif/{filename}.gif', format='GIF', append_images=frames[1:], save_all=True, duration=500, loop=0)
+        frames[0].save(save + f'{filename}.gif', format='GIF', append_images=frames[1:], save_all=True, duration=500, loop=0)
         print('Created GIF successfully!')
         
         
         
-    def wrapper_distribution_ring(self,filename,head,norm,period,box_list,norm_pixel,res = '1min', overflow = True, esquare = False,window_width = 5, close=True):
-       self.distribution_ring(filename='pixel_sorted_energy_' + filename, title=f'Mean of energy sorted by energy of pixel {norm_pixel}', head=head, norm=norm, period=period, box_list=box_list, norm_pixel = norm_pixel, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=True)
-       self.distribution_ring(filename='pixel_ring_ts_' + filename, title='Mean of energy (time series)', head=head, norm=norm, period=period,box_list=box_list, norm_pixel = norm_pixel, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=False)   
+    def wrapper_distribution_ring(self,filename,head,norm,period,box_list,norm_pixel, correction=False, save = 'gif/', res = '1min', overflow = True, esquare = False,window_width = 5, close=True):
+       self.distribution_ring(filename='pixel_sorted_energy_' + filename, title=f'Mean of energy sorted by energy of pixel {norm_pixel}', head=head, norm=norm, period=period, box_list=box_list, norm_pixel = norm_pixel, correction=correction, save=save, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=True)
+       self.distribution_ring(filename='pixel_ring_ts_' + filename, title='Mean of energy (time series)', head=head, norm=norm, period=period,box_list=box_list, norm_pixel = norm_pixel, correction=correction, save = save, res = res, overflow = overflow, esquare = esquare, window_width = window_width, close=close, sorted_by_energy=False)   
 
 
     def landau(self,x,A,B,C,D):

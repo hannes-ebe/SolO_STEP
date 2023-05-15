@@ -83,9 +83,12 @@ def plausibility_check(B_phi,B_theta):
 
 ### Herausrechnen der Pitchwinkeleffekte aus den Energie-Mittelwerten ###
 
-dat = STEP(2021,12,4)
+# dat = STEP(2021,12,4)
 
-box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
-period = [dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)]
+# box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
+# period = [dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)]
 
-dat.wrapper_distribution_ring('21_12_04_electrons_pw_inverse', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3, correction=True, save='test_pitchangle_correction/')
+# dat.wrapper_distribution_ring('21_12_04_electrons_pw_inverse', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3, correction=True, save='test_pitchangle_correction/')
+
+
+

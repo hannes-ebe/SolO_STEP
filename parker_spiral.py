@@ -10,7 +10,7 @@ omega = 2.9e-4 #2*np.pi/27.28/86400 # 2.9e-4
 print(omega)
 
 # step size
-stepsize = 1e6
+stepsize = 8e6
 
 '''Irgendwas funktioniert mit dem Omega nicht!!!'''
 
@@ -26,6 +26,7 @@ t_arrival = au/v
 theta = omega*r/v
 # theta = np.degrees(theta)
 print(r)
+print(theta)
 
 
 fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})

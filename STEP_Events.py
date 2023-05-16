@@ -10,6 +10,7 @@ import mag
 
 from PIL import Image
 import glob
+from STEP import STEP
 
 from scipy.optimize import curve_fit
 
@@ -28,129 +29,9 @@ hmap = mpl.cm.seismic
 
 
 
-class STEP_Events():
-    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',lastofmonth=False):
-        '''Magnetfeld wird gleich mitgeladen.'''
-        # Loading data
-        if lastofmonth:
-            if month!=12:
-                self.itime, self.idata = ld.load_nom(rpath=rpath,period=(dt.datetime(year,month,day),dt.datetime(year,month+1,1)), products=('M','A'))
-            else:
-                self.itime, self.idata = ld.load_nom(rpath=rpath,period=(dt.datetime(year,month,day),dt.datetime(year+1,1,1)), products=('M','A'))
-        else:
-            self.itime, self.idata = ld.load_nom(rpath=rpath,period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)), products=('M','A'))
-        print('STEP-Data loaded successfully.')
-        
-        # Combining data (Main and Auxiliary Product)
-        ld.combine_data(self.itime, self.idata)
-        print('STEP-Data combined successfully.')
-        
-        # Loading MAG-Data
-        # if lastofmonth:
-        #     if month!=12:
-        #         self.mag = mag.MAGdata(path = rpath_mag, period = (dt.datetime(year,month,day),dt.datetime(year,month+1,1)))
-        #     else:
-        #         self.mag = mag.MAGdata(path = rpath_mag, period = (dt.datetime(year,month,day),dt.datetime(year+1,1,1)))
-        # else:
-        #     self.mag = mag.MAGdata(path = rpath_mag, period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)))
-
-    def cut_data(self,t0,t1):
-        cdat = {}
-        ctime = {}
-        for p in self.idata.keys():
-            m = (self.itime[p]>=t0) * (self.itime[p]<t1)
-            ctime[p] = self.itime[p][m] 
-            cdat[p] = self.idata[p][m] 
-        return ctime, cdat
-
-    def data_prep(self,ebins=ebins,res = '1min', head = 0, period = None, norm = False, overflow = True, esquare = False):
-        '''Vorbereitung der STEP-Daten basierend auf Lars Skripten.'''
-        vmax = None # Falls keine Normierung angegben wird, gebe ich None zurück. Was soll vmax eigentlich darstellen?
-
-        if period:
-            time,dat = self.cut_data(period[0]-dt.timedelta(seconds=59),period[1])
-        else:
-            time,dat = self.itime, self.idata
-        pldat = []
-        pltime = []
-        if type(res) == dt.timedelta:
-            for i in range(16):
-                if head in [0,1]:
-                    tmptime = [time['STEP_C_%i_%.2i'%(head,i)][0]]
-                    while tmptime[-1]<time['STEP_C_%i_%.2i'%(head,i)][-1]:
-                        tmptime.append(tmptime[-1]+res)
-                if head in [0,1]:
-                    tdat = 1.*dat['STEP_C_%i_%.2i'%(head,i)]
-                    ttime = time['STEP_C_%i_%.2i'%(head,i)]
-                    tmpdat = []
-                    for en in range(tdat.shape[1]):
-                        H,t = np.histogram(ttime,bins = tmptime,weights = tdat[:,en])
-                        tmpdat.append(H)
-                    tmpdat = np.array(tmpdat).T
-                    pldat.append(tmpdat)
-                    pltime.append(np.array(tmptime[:-1]))
-                else:
-                    pldat.append(1.*dat['STEP_C_0_%.2i'%(i)]-dat['STEP_C_1_%.2i'%(i)])
-        elif res == '1min':
-            for i in range(16):
-                if head in [0,1]:
-                    pldat.append(1.*dat['STEP_C_%i_%.2i'%(head,i)])
-                    pltime.append(time['STEP_C_%i_%.2i'%(head,i)])
-                else:
-                    pldat.append(1.*dat['STEP_C_0_%.2i'%(i)]-dat['STEP_C_1_%.2i'%(i)])
-                    pltime.append(time['STEP_C_0_%.2i'%(i)])
-                if esquare:
-                    pldat[-1]= pldat[-1]/(np.diff(ebins)**2)[np.newaxis,:]
-                    #pldat[-1]= pldat[-1]/ np.diff(ebins)[np.newaxis,:]
-        elif res == '1s':
-            for i in range(16):
-                if head in [0,1]:
-                    pldat.append(dat['STEP_C_%i_%.2i'%(head,i)]/60.)
-                    pltime.append(time['STEP_C_%i_%.2i'%(head,i)])
-                else:
-                    pldat.append(dat['STEP_C_0_%.2i'%(i)]/60.-dat['STEP_C_1_%.2i'%(i)]/60.)
-                    pltime.append(time['STEP_C_0_%.2i'%(i)])
-                if esquare:
-                    pldat[-1]= pldat[-1]/(np.diff(ebins)**2)[np.newaxis,:]
-            for i in range(16):
-                if head in [0,1]:
-                    pldat.append(dat['STEP_M_%i_%.2i'%(head,i)])
-                    pltime.append(time['STEP_M_%i_%.2i'%(head,i)])
-                else:
-                    pldat.append(dat['STEP_M_0_%.2i'%(i)]-dat['STEP_M_1_%.2i'%(i)])
-                    pltime.append(time['STEP_M_0_%.2i'%(i)])
-                if esquare:
-                    pldat[-1]= pldat[-1]/(np.diff(ebins)[8:40]**2)[np.newaxis,:]
-        if not overflow:
-            for i in range(len(pldat)):
-                pldat[i][:,-1] = 0.
-        if norm == 'tmax':
-            vmax = np.zeros(pltime[0].shape)
-            for i in range(len(pldat)):
-                vpmax = np.amax(pldat[i],axis=1)
-                vmax[vpmax>vmax] = vpmax[vpmax>vmax]
-        elif norm == 'ptmax' or norm == 'ptemax':
-            vmax = np.zeros((16,pltime[0].shape[0]))
-            for i in range(16):
-                vpmax = np.amax(pldat[i],axis=1)
-                vmax[i][vpmax>vmax[i]] = vpmax[vpmax>vmax[i]]
-        elif norm == 'max' or norm == 'logmax':
-            vmax = 0.
-            for i in range(len(pldat)):
-                vpmax = np.amax(pldat[i])
-                vmax = max(vpmax,vmax)
-        elif norm == 'pemax':
-            vmax = np.zeros((16,pldat[i].shape[1]))
-            for i in range(16):
-                vpmax = np.amax(pldat[i],axis=0)
-                vmax[i] = vpmax
-        elif norm == 'emax':
-            vmax = np.zeros(pldat[i].shape[1])
-            for i in range(16):
-                vpmax = np.amax(pldat[i],axis=0)
-                vmax[vpmax>vmax] = vpmax[vpmax>vmax]
-
-        return pldat, pltime, vmax
+class STEP_Events(STEP):
+    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',magnet=False,lastofmonth=False):
+        super().__init__(year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',magnet=False,lastofmonth=False)
     
     def sum_pixel(self,ebins,head,period,norm):
         '''Summiere erst über alle Pixel.'''

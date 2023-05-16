@@ -162,7 +162,7 @@ class STEP():
 
         return pldat, pltime, vmax
     
-    def data_boxes(self,pldat,pltime,box_list):
+    def data_boxes(self,pldat,box_list):
         '''Nehme pldat und, um die Daten auf die Boxen einzuschränken. Dabei werden die Werte, die ignoriert werden sollen durch 0.0 ersetzt.
         box_data wird zurückgegeben.'''
         # Erster Index von pdat müsste die Zeitreihe sein, der zweite der Energie-Bin.
@@ -186,7 +186,7 @@ class STEP():
                     for e in range(elow,eup+1):
                         ayuda[t][e] = pdat[t][e]
             box_data.append(ayuda)
-        return box_data, pltime
+        return box_data
             
 
     def step_plot(self,xlabel,ylabel,title):
@@ -354,8 +354,8 @@ class STEP():
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
         if type(box_list) == list:
-            little_helper_dat, little_helper_time, little_helper_vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
-            pldat = self.data_boxes(little_helper_dat,little_helper_time,box_list)
+            little_helper_dat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
+            pldat = self.data_boxes(little_helper_dat,box_list)
         else:
             pldat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
 

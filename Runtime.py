@@ -31,8 +31,8 @@ hmap = mpl.cm.seismic
 
 
 class STEP_Runtime(STEP):
-    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',lastofmonth=False):
-        super().__init__(year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',lastofmonth=False)
+    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',magnet=False,lastofmonth=False):
+        super().__init__(year,month,day,rpath=rpath,rpath_mag=rpath_mag,magnet=magnet,lastofmonth=lastofmonth)
         
     def rel_speed(self,E,m):
         '''Berechnet die relativistische Geschwindigkeit zur übergebenen kinetischen Energie E und Masse m.'''
@@ -42,7 +42,9 @@ class STEP_Runtime(STEP):
 
 
 
-dat = STEP_Runtime(2021, 12, 4)
+# dat = STEP_Runtime(2021, 12, 4)
+dat = STEP_Runtime(2021, 12, 4, rpath='data/')
+
 box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
 period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30))
 
@@ -51,21 +53,39 @@ pixel_means2 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_lis
 
 
 # Geschwindigkeit:
-print(pixel_means[0])
-print(pixel_means[3])
-print(pixel_means[3]*1.6022e-16)
 # Korrektur, da Energie-Mittelwerte in keV angegeben sind.
 v = dat.rel_speed(pixel_means[3]*1.6022e-16, const.m_e)
-print(v)
-divided_v = 1/v
-print(divided_v)
 
+# Filter die nans raus
+divided_v = 1/v
+mask = np.isfinite(divided_v)
+divided_v = divided_v[mask]
 
 v2 = dat.rel_speed(pixel_means2[3]*1.6022e-16, const.m_e)
 divided_v2 = 1/v2
+mask2 = np.isfinite(divided_v2)
+divided_v2 = divided_v2[mask2]
+
+def lin(x,m,b):
+    return m*x+b
+
+# Unix time stamp (Sekunden seit 1. Januar 1970) für curve_fit()
+ts = np.array([t.timestamp() for t in pixel_means[0]])[mask]
+popt, pcov = curve_fit(lin,ts,divided_v)
+
+ts2 = np.array([t.timestamp() for t in pixel_means2[0]])[mask2]
+popt2, pcov2 = curve_fit(lin,ts2,divided_v2)
+
+plt.plot(ts,lin(ts,popt[0],popt[1]),label='fit one minute data')
+plt.plot(ts2,lin(ts2,popt2[0],popt2[1]),label='fit five minute data')
+
     
 # Counts über fünf Minuten oder eine Minute summiert.
-plt.scatter(pixel_means[0],divided_v,label='five minutes')
-plt.scatter(pixel_means2[0],divided_v2,label='one minute')
+plt.scatter(ts,divided_v,marker='x',label='five minutes')
+plt.scatter(ts2,divided_v2,marker='x',label='one minute')
+plt.title('pixel 3; 2021-21-04')
+plt.xlabel('unix time stamp [s]')
+plt.ylabel(r'$v^{-1}~[\frac{\mathrm{m}}{\mathrm{s}}]$')
 plt.legend()
+plt.savefig('runtime/test_runtime_pixel3_2021_12_04.png')
 plt.show()

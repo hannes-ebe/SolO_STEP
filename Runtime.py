@@ -13,7 +13,7 @@ from PIL import Image
 import glob
 from STEP import STEP
 
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, fsolve
 
 ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
          3.6  ,   3.92 ,   4.288,   4.672,   5.088,   5.568,   6.08 ,
@@ -40,20 +40,25 @@ class STEP_Runtime(STEP):
         ayuda = E/m/const.c/const.c + 1.0
         return const.c*np.sqrt(1.0-1.0/ayuda/ayuda)
     
-    def runtime(self,divided_v,m,b):
-        '''Berechnet die Laufzeit von der Sonne unter der Annahme einer konstante Strecke und Geschwindigkeit (bzw. 1/v).'''
-        # 1/v=mt+b --> t = (1/v-b)/m; t ist hier unix-Zeit
-        # s=vt_run --> 1/v=t_run/s
-        # t_run/s = mt+b
-
-        # Laufzeit berechnen. 
-        return (divided_v-b)/m
+    def lin(x,m,b):
+        return m*x+b
+    
+    def injection_time(self,m,b,x0=20000+1.6e9):
+        '''Berechnet den Injektionszeitpunkt über nullstellenbestimmung aus den Fit-Parametern.'''
+        root = fsolve(lin,x0,(m,b))
+        return root
+        
+    def runtime(self,m,b,t_arrival):
+        '''Berechnet die Laufzeit von der Sonne für die Fit-Parameter und die entsprechenden Ankunftszeiten.'''
+        injec_time = self.injection_time(m, b)
+        run_time = t_arrival - injec_time
+        return run_time
     
 
 
 
-# dat = STEP_Runtime(2021, 12, 4)
-dat = STEP_Runtime(2021, 12, 4, rpath='data/')
+dat = STEP_Runtime(2021, 12, 4)
+# dat = STEP_Runtime(2021, 12, 4, rpath='data/')
 
 box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
 period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30))
@@ -62,52 +67,56 @@ pixel_means = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list
 pixel_means2 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list, window_width=1)
 
 
-# Geschwindigkeit:
-# Korrektur, da Energie-Mittelwerte in keV angegeben sind.
-v = dat.rel_speed(pixel_means[3]*dat.keV_to_J, const.m_e)
-
-# Filter die nans raus
-divided_v = 1/v
-mask = np.isfinite(divided_v)
-divided_v = divided_v[mask]
-
-v2 = dat.rel_speed(pixel_means2[3]*dat.keV_to_J, const.m_e)
-divided_v2 = 1/v2
-mask2 = np.isfinite(divided_v2)
-divided_v2 = divided_v2[mask2]
-
-def lin(x,m,b):
-    return m*x+b
-
-# Unix time stamp (Sekunden seit 1. Januar 1970) für curve_fit()
-ts = np.array([dt.datetime.timestamp(t) for t in pixel_means[0]])[mask]
-popt, pcov = curve_fit(lin,ts,divided_v)
-
-ts2 = np.array([dt.datetime.timestamp(t) for t in pixel_means2[0]])[mask2]
-popt2, pcov2 = curve_fit(lin,ts2,divided_v2)
-
-run_time = dat.runtime(popt[0],divided_v)
-run_time2 = dat.runtime(popt2[0],divided_v2)
-print(popt[0],popt2[0])
-print(divided_v,divided_v2)
-print(run_time, run_time2)
-run_time = np.around(run_time)
-run_time2 = np.around(run_time2)
-print(run_time, run_time2)
-print(run_time,dt.datetime.fromtimestamp(run_time))
-print(run_time2,dt.datetime.fromtimestamp(run_time2))
-
-
-plt.plot(ts,lin(ts,popt[0],popt[1]),label='fit one minute data')
-plt.plot(ts2,lin(ts2,popt2[0],popt2[1]),label='fit five minute data')
-
+# Berechnung für alle Pixel:
+for j in range(1,16):
+    # Geschwindigkeit:
+    # Korrektur, da Energie-Mittelwerte in keV angegeben sind.
+    v = dat.rel_speed(pixel_means[j]*dat.keV_to_J, const.m_e)
     
-# Counts über fünf Minuten oder eine Minute summiert.
-plt.scatter(ts,divided_v,marker='x',label='five minutes')
-plt.scatter(ts2,divided_v2,marker='x',label='one minute')
-plt.title('pixel 3; 2021-21-04')
-plt.xlabel('unix time stamp [s]')
-plt.ylabel(r'$v^{-1}~[\frac{\mathrm{s}}{\mathrm{m}}]$')
-plt.legend()
-plt.savefig('runtime/test_runtime_pixel3_2021_12_04.png')
-plt.show()
+    # Filter die nans raus
+    divided_v = 1/v
+    mask = np.isfinite(divided_v)
+    divided_v = divided_v[mask]
+    
+    v2 = dat.rel_speed(pixel_means2[j]*dat.keV_to_J, const.m_e)
+    divided_v2 = 1/v2
+    mask2 = np.isfinite(divided_v2)
+    divided_v2 = divided_v2[mask2]
+    
+    lin = STEP_Runtime.lin
+    
+    # Unix time stamp (Sekunden seit 1. Januar 1970) für curve_fit()
+    ts = np.array([dt.datetime.timestamp(t) for t in pixel_means[0]])[mask]
+    popt, pcov = curve_fit(lin,ts,divided_v)
+    
+    ts2 = np.array([dt.datetime.timestamp(t) for t in pixel_means2[0]])[mask2]
+    popt2, pcov2 = curve_fit(lin,ts2,divided_v2)
+    
+    run_time = dat.runtime(popt[0],popt[1],ts)
+    run_time2 = dat.runtime(popt2[0],popt2[1],ts2)
+
+    run_time = [int(i) for i in np.rint(run_time)]
+    run_time2 = [int(i) for i in np.rint(run_time2)]
+    
+    
+    fig, ax1 = plt.subplots(figsize=(10,6))
+    ax2 = ax1.twinx()
+    
+    ax1.plot(ts,lin(ts,popt[0],popt[1]),label='fit one minute')
+    ax1.plot(ts2,lin(ts2,popt2[0],popt2[1]),label='fit five minutes')
+    
+        
+    # Counts über fünf Minuten oder eine Minute summiert.
+    ax1.scatter(ts,divided_v,marker='x',label='five minutes')
+    ax1.scatter(ts2,divided_v2,marker='x',label='one minute')
+    
+    ax2.plot(ts,run_time,label='run time (five minutes)',c='red')
+    ax2.plot(ts2,run_time2,label='run time (one minute)',c='green')
+    
+    plt.title(f'pixel {j}; 2021-12-04')
+    ax1.set_xlabel('unix time stamp [s]')
+    ax1.set_ylabel(r'$v^{-1}~[\frac{\mathrm{s}}{\mathrm{m}}]$')
+    ax2.set_ylabel(r'run time [s]')
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='lower right')
+    plt.savefig(f'runtime/test_runtime_pixel{j}_2021_12_04.png')

@@ -57,15 +57,17 @@ class STEP_Runtime(STEP):
 
 
 
-dat = STEP_Runtime(2021, 12, 4)
-# dat = STEP_Runtime(2021, 12, 4, rpath='data/')
+# dat = STEP_Runtime(2021, 12, 4)
+dat = STEP_Runtime(2021, 12, 4, rpath='data/')
 
 box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
 period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30))
 
-pixel_means = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list)
-pixel_means2 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list, window_width=1)
+pixel_means = dat.calc_sliding_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list)
+pixel_means2 = dat.calc_sliding_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list, window_width=1)
 
+print(pixel_means[3])
+print(pixel_means2[3])
 
 # Berechnung für alle Pixel:
 for j in range(1,16):
@@ -113,10 +115,10 @@ for j in range(1,16):
     ax2.plot(ts,run_time,label='run time (five minutes)',c='red')
     ax2.plot(ts2,run_time2,label='run time (one minute)',c='green')
     
-    plt.title(f'pixel {j}; 2021-12-04')
+    plt.title(f'sliding mean; pixel {j}; 2021-12-04')
     ax1.set_xlabel('unix time stamp [s]')
     ax1.set_ylabel(r'$v^{-1}~[\frac{\mathrm{s}}{\mathrm{m}}]$')
     ax2.set_ylabel(r'run time [s]')
     ax1.legend(loc='upper left')
     ax2.legend(loc='lower right')
-    plt.savefig(f'runtime/test_runtime_pixel{j}_2021_12_04.png')
+    plt.savefig(f'runtime/test_runtime_sliding_window_pixel{j}_2021_12_04.png')

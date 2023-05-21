@@ -349,7 +349,8 @@ class STEP():
         print('Plotted TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res) + ' successfully.')
         
     def calc_energy_means(self,ebins=ebins,res = '1min', head = -1, period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)), box_list=None, window_width=5, pixel_list=[i for i in range(1,16)], norm = 'tmax', overflow = True, esquare = False):
-        '''Wichtig: Die Energie ist in keV angegeben!!!'''
+        '''Wichtig: Die Energie ist in keV angegeben!!!
+        Falls andere Zeitauflösung als Minuten gewählt wird, kann es Probleme mit window_width und der Berechnung der Zeit geben.'''
         i = 0
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
@@ -373,6 +374,49 @@ class STEP():
                     mean += integral[j]*0.5*(ebins[j+1]+ebins[j])
                 mean = mean/np.sum(integral)
                 pixel_means[k].append(mean)
+            i +=1
+        
+        for i in range(len(pixel_means)):
+            # Array erstellen
+            pixel_means[i] = np.array(pixel_means[i])
+            
+        return pixel_means
+    
+    def calc_sliding_energy_means(self,ebins=ebins,res = '1min', head = -1, period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)), box_list=None, window_width=5, sliding_width=4, pixel_list=[i for i in range(1,16)], norm = 'tmax', overflow = True, esquare = False):
+        '''Wichtig: Die Energie ist in keV angegeben!!!
+        Falls andere Zeitauflösung als Minuten gewählt wird, kann es Probleme mit window_width und der Berechnung der Zeit geben.
+        Nehme immer vier benachbarte energy-bins und berechne den Mittelwert. Dieses Fenster gleitet über alle bins. Nehme dann aus diesen Werten
+        den maximalen Wert. Versuche so die Effekte der Daten-Boxen zu minimieren, weil die Tail-Länge an der Seite den Mittelwert beeinflusst.'''
+        i = 0
+        pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
+        
+        if type(box_list) == list:
+            little_helper_dat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
+            pldat = self.data_boxes(little_helper_dat,box_list)
+        else:
+            pldat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
+
+        while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
+            pixel_means[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
+            
+            # Berechnung der Mittelwerte:
+            for k in pixel_list:
+                pdat = pldat[k][i*window_width:(i+1)*window_width]
+                integral = np.sum(pdat,axis=0)
+                # calculating mean
+                # Breite des Sliding-windows sollte natürlicher Teiler der 56 energy-bins sein und wird in Zahl der Indizes angegeben.
+                j_indizes=[i*sliding_width for i in range(int(len(integral)/sliding_width))]
+                j_indizes=[i for i in range(0,len(integral)-sliding_width)]
+                means = []
+                for j in j_indizes:
+                    # Für Bestimmung des Mittelwertes der Verteilung wird Mitte der Bins gewählt
+                    mean = 0.0
+                    for k in range(sliding_width):
+                        mean += integral[j+k]*0.5*(ebins[j+k+1]+ebins[j+k])
+                    mean = mean/np.sum(integral[j:j+sliding_width])
+                    means.append(mean)
+                print(means)
+                pixel_means[k].append(max(means))
             i +=1
         
         for i in range(len(pixel_means)):

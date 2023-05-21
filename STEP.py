@@ -385,8 +385,8 @@ class STEP():
     def calc_sliding_energy_means(self,ebins=ebins,res = '1min', head = -1, period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)), box_list=None, window_width=5, sliding_width=4, pixel_list=[i for i in range(1,16)], norm = 'tmax', overflow = True, esquare = False):
         '''Wichtig: Die Energie ist in keV angegeben!!!
         Falls andere Zeitauflösung als Minuten gewählt wird, kann es Probleme mit window_width und der Berechnung der Zeit geben.
-        Nehme immer vier benachbarte energy-bins und berechne den Mittelwert. Dieses Fenster gleitet über alle bins. Nehme dann aus diesen Werten
-        den maximalen Wert. Versuche so die Effekte der Daten-Boxen zu minimieren, weil die Tail-Länge an der Seite den Mittelwert beeinflusst.'''
+        Nehme immer vier benachbarte energy-bins und berechne den Mittelwert (Sowohl der normierten counts und der Energie). Dieses Fenster gleitet über alle bins. 
+        Nehme dann aus diesen Werten den maximalen Wert. Versuche so die Effekte der Daten-Boxen zu minimieren, weil die Tail-Länge an der Seite den Mittelwert beeinflusst.'''
         i = 0
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
@@ -407,16 +407,20 @@ class STEP():
                 # Breite des Sliding-windows sollte natürlicher Teiler der 56 energy-bins sein und wird in Zahl der Indizes angegeben.
                 j_indizes=[i*sliding_width for i in range(int(len(integral)/sliding_width))]
                 j_indizes=[i for i in range(0,len(integral)-sliding_width)]
-                means = []
+                means_energy = [] # mittlere Energien
+                means_normedcounts = [] # Mittelung der normierten Counts im Window
                 for j in j_indizes:
                     # Für Bestimmung des Mittelwertes der Verteilung wird Mitte der Bins gewählt
                     mean = 0.0
-                    for k in range(sliding_width):
-                        mean += integral[j+k]*0.5*(ebins[j+k+1]+ebins[j+k])
+                    count =  0.0
+                    for l in range(sliding_width):
+                        mean += integral[j+l]*0.5*(ebins[j+l+1]+ebins[j+l])
+                        count += integral[j+l]*(ebins[j+l+1]-ebins[j+l])      # Multipliziere hier nochmal mit der Bin-Breite; Keine Normierung auf eins, damit ich nachher max, count wählen kann
                     mean = mean/np.sum(integral[j:j+sliding_width])
-                    means.append(mean)
-                print(means)
-                pixel_means[k].append(max(means))
+                    means_energy.append(mean)
+                    means_normedcounts.append(count)
+                total_mean = means_energy[means_normedcounts.index(max(means_normedcounts))]  # liefert mir Energiemittelwert für maximalen normierten Count beim Sliding-Window
+                pixel_means[k].append(total_mean)
             i +=1
         
         for i in range(len(pixel_means)):
@@ -424,3 +428,15 @@ class STEP():
             pixel_means[i] = np.array(pixel_means[i])
             
         return pixel_means
+    
+    def plot_energy_means(self,pixel_means, rpath, pixel_list=[i for i in range(1,16)]):
+        '''Plottet die übergebenen Mittelwerte für alle Pixel.'''
+        fig, ax = plt.subplots(figsize=(10,6))
+        for i in pixel_list:
+            ax.scatter(pixel_means[0],pixel_means[i],marker='x',label=f'pixel {i}')
+        ax.set_ylabel('mean of energy [keV]')
+        ax.set_xlabel('time')
+        ax.tick_params(axis='x',labelrotation=45)
+        plt.title('energy means')
+        plt.legend()
+        plt.savefig(rpath)

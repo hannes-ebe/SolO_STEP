@@ -187,7 +187,19 @@ class STEP():
                         ayuda[t][e] = pdat[t][e]
             box_data.append(ayuda)
         return box_data
-            
+    
+    def cut_straight_line(self,pldat,time_ind = (0,10),e_ind = (0,10)):
+        '''Funktion, um Daten unterhalb einer Geraden in den 2d-Arrays der STEP-Daten zu entfernen. Ähnliche Funktionsweise, wie data_boxes().
+        Werte ohne counts werden mit 0.0  gefüllt, um bei der Mittelwertsbildung egal zu sein. Vorsichtig sein!!! Funktion wird für Spezialfälle fehleranfällig sein!'''
+        modified_data = []
+        # Loope  durch die Pixel
+        for pdat in pldat:
+            ayuda = np.zeros(shape=(len(pdat),len(pdat.T)),dtype='float')
+            # Hier aus den Start- und Endindizes für time und energy eine lineare Funktion basteln...
+        
+        modified_data.append(ayuda)
+        return modified_data
+
 
     def step_plot(self,xlabel,ylabel,title):
         '''Erzeugt den bekannten STEP-Plot mit allen 16 Pixeln. Gibt Liste mit axes zurück.'''

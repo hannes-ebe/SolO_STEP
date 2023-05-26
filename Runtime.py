@@ -65,19 +65,21 @@ period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30))
 
 # Alte Berechnung über alle Daten:
 
+
+
 pixel_means = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list)
 pixel_means2 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list, window_width=1)
 
-dat.plot_energy_means(pixel_means,'test_sliding_energy_means/energy_means_5_minutes_pixel3_2021_12_04.png',pixel_list=[3])
-dat.plot_energy_means(pixel_means2,'test_sliding_energy_means/energy_means_1_minute_pixel3_2021_12_04.png',pixel_list=[3])
+dat.plot_energy_means(pixel_means,'test_sliding_energy_means/energy_means_5_minutes_pixel3_2021_12_04_boxes.png',pixel_list=[3])
+dat.plot_energy_means(pixel_means2,'test_sliding_energy_means/energy_means_1_minute_pixel3_2021_12_04_boxes.png',pixel_list=[3])
 
 ### Berechnung mit Sliding-Window:
 
 pixel_means = dat.calc_sliding_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list)
 pixel_means2 = dat.calc_sliding_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list, window_width=1)
 
-dat.plot_energy_means(pixel_means,'test_sliding_energy_means/sliding_energy_means_5_minutes_pixel3_2021_12_04.png',pixel_list=[3])
-dat.plot_energy_means(pixel_means2,'test_sliding_energy_means/sliding_energy_means_1_minute_pixel3_2021_12_04.png',pixel_list=[3])
+dat.plot_energy_means(pixel_means,'test_sliding_energy_means/sliding_energy_means_5_minutes_pixel3_2021_12_04_boxes.png',pixel_list=[3])
+dat.plot_energy_means(pixel_means2,'test_sliding_energy_means/sliding_energy_means_1_minute_pixel3_2021_12_04_boxes.png',pixel_list=[3])
 
 # Berechnung für alle Pixel:
 for j in range(1,16):
@@ -131,4 +133,4 @@ for j in range(1,16):
     ax2.set_ylabel(r'run time [s]')
     ax1.legend(loc='upper left')
     ax2.legend(loc='lower right')
-    plt.savefig(f'runtime/test_runtime_sliding_window_pixel{j}_2021_12_04.png')
+    plt.savefig(f'runtime/test_runtime_sliding_window_pixel{j}_2021_12_04_boxes.png')

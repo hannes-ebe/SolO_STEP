@@ -45,7 +45,7 @@ class STEP_Runtime(STEP):
     
     def injection_time(self,m,b,x0=20000+1.6e9):
         '''Berechnet den Injektionszeitpunkt über nullstellenbestimmung aus den Fit-Parametern.'''
-        root = fsolve(lin,x0,(m,b))
+        root = fsolve(lin,x0,(m,b))[0]    # Funktion gibt array zurück
         return root
         
     def runtime(self,m,b,t_arrival):
@@ -60,26 +60,33 @@ class STEP_Runtime(STEP):
 # dat = STEP_Runtime(2021, 12, 4)
 dat = STEP_Runtime(2021, 12, 4, rpath='data/')
 
-box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
-period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30))
+# box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
+# period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30))
+
+# Daten auf Teil angeschränkt, der für Analyse relevant ist...
+
+box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,60],[20,25]],[[30,60],[15,20]],[[40,60],[10,15]],[[50,60],[3,10]]]
+period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,14,30))
 
 # Alte Berechnung über alle Daten:
 
-
+# Einschränkung auf ersten Teil nicht über period, sondern manuell. Sonst würde mir box_list wahrcheinlich um die Ohren fliegen...
 
 pixel_means = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list)
 pixel_means2 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list, window_width=1)
 
-dat.plot_energy_means(pixel_means,'test_sliding_energy_means/energy_means_5_minutes_pixel3_2021_12_04_boxes.png',pixel_list=[3])
-dat.plot_energy_means(pixel_means2,'test_sliding_energy_means/energy_means_1_minute_pixel3_2021_12_04_boxes.png',pixel_list=[3])
+dat.plot_energy_means(pixel_means,'runtime_test2/energy_means_5_minutes_pixel3_2021_12_04_adjust.png',pixel_list=[3])
+dat.plot_energy_means(pixel_means2,'runtime_test2/energy_means_1_minute_pixel3_2021_12_04_adjust.png',pixel_list=[3])
+
+dat.plot_ts(period=period, head=-1, save='runtime_test2/', norm='tmax',box_list=box_list)
 
 ### Berechnung mit Sliding-Window:
 
-pixel_means = dat.calc_sliding_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list)
-pixel_means2 = dat.calc_sliding_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list, window_width=1)
+# pixel_means = dat.calc_sliding_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list)
+# pixel_means2 = dat.calc_sliding_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list, window_width=1)
 
-dat.plot_energy_means(pixel_means,'test_sliding_energy_means/sliding_energy_means_5_minutes_pixel3_2021_12_04_boxes.png',pixel_list=[3])
-dat.plot_energy_means(pixel_means2,'test_sliding_energy_means/sliding_energy_means_1_minute_pixel3_2021_12_04_boxes.png',pixel_list=[3])
+# dat.plot_energy_means(pixel_means,'test_sliding_energy_means/sliding_energy_means_5_minutes_pixel3_2021_12_04_adjust.png',pixel_list=[3])
+# dat.plot_energy_means(pixel_means2,'test_sliding_energy_means/sliding_energy_means_1_minute_pixel3_2021_12_04_adjust.png',pixel_list=[3])
 
 # Berechnung für alle Pixel:
 for j in range(1,16):
@@ -87,7 +94,7 @@ for j in range(1,16):
     # Korrektur, da Energie-Mittelwerte in keV angegeben sind.
     v = dat.rel_speed(pixel_means[j]*dat.keV_to_J, const.m_e)
     
-    # Filter die nans raus
+    # Filtere die nans raus
     divided_v = 1/v
     mask = np.isfinite(divided_v)
     divided_v = divided_v[mask]
@@ -109,16 +116,23 @@ for j in range(1,16):
     run_time = dat.runtime(popt[0],popt[1],ts)
     run_time2 = dat.runtime(popt2[0],popt2[1],ts2)
 
+    # Runden zum nächsten Integer für Unix-Time
     run_time = [int(i) for i in np.rint(run_time)]
     run_time2 = [int(i) for i in np.rint(run_time2)]
+    injection_time = np.rint(dat.injection_time(popt[0],popt[1]))
+    injection_time2 = np.rint(dat.injection_time(popt2[0],popt2[1]))
     
+    print(f'Injektionszeit Pixel {j}:')
+    print('fünf-minütlich: ',injection_time)
+    print('minütlich: ',injection_time2)
     
     fig, ax1 = plt.subplots(figsize=(10,6))
     ax2 = ax1.twinx()
     
     ax1.plot(ts,lin(ts,popt[0],popt[1]),label='fit one minute')
     ax1.plot(ts2,lin(ts2,popt2[0],popt2[1]),label='fit five minutes')
-    
+    # Position wird in Daten-Koordinaten angegeben, deshalb die komische Berechnung...
+    ax2.text(ts2[0],0.5*(run_time2[-1]-run_time2[0])+run_time2[0],f'injection time in unix time [s]:\n{injection_time} (five minutes)\n{injection_time2} (one minute)')
         
     # Counts über fünf Minuten oder eine Minute summiert.
     ax1.scatter(ts,divided_v,marker='x',label='five minutes')
@@ -133,4 +147,4 @@ for j in range(1,16):
     ax2.set_ylabel(r'run time [s]')
     ax1.legend(loc='upper left')
     ax2.legend(loc='lower right')
-    plt.savefig(f'runtime/test_runtime_sliding_window_pixel{j}_2021_12_04_boxes.png')
+    plt.savefig(f'runtime_test2/test_runtime_sliding_window_pixel{j}_2021_12_04_adjust.png')

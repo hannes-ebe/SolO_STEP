@@ -30,8 +30,8 @@ hmap = mpl.cm.seismic
 
 
 class STEP_Events(STEP):
-    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',magnet=False,lastofmonth=False):
-        super().__init__(year,month,day,rpath=rpath,rpath_mag=rpath_mag,magnet=magnet,lastofmonth=lastofmonth)
+    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',magnet_default_path=False,lastofmonth=False):
+        super().__init__(year,month,day,rpath=rpath,rpath_mag=rpath_mag,magnet_default_path=magnet_default_path,lastofmonth=lastofmonth)
     
     def sum_pixel(self,ebins,head,period,norm):
         '''Summiere erst über alle Pixel.'''

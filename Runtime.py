@@ -31,8 +31,8 @@ hmap = mpl.cm.seismic
 
 
 class STEP_Runtime(STEP):
-    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',magnet=False,lastofmonth=False):
-        super().__init__(year,month,day,rpath=rpath,rpath_mag=rpath_mag,magnet=magnet,lastofmonth=lastofmonth)
+    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',magnet_default_path=False,lastofmonth=False):
+        super().__init__(year,month,day,rpath=rpath,rpath_mag=rpath_mag,magnet_default_path=magnet_default_path,lastofmonth=lastofmonth)
         self.keV_to_J = 1.6022e-16
         
     def rel_speed(self,E,m):
@@ -58,7 +58,7 @@ class STEP_Runtime(STEP):
 
 
 # dat = STEP_Runtime(2021, 12, 4)
-dat = STEP_Runtime(2021, 12, 4, rpath='data/')
+dat = STEP_Runtime(2021, 12, 4, rpath='data/STEP/',rpath_mag='data/mag/')
 
 # box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
 # period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30))
@@ -89,6 +89,8 @@ dat.plot_ts(period=period, head=-1, save='runtime_test2/', norm='tmax',box_list=
 # dat.plot_energy_means(pixel_means2,'test_sliding_energy_means/sliding_energy_means_1_minute_pixel3_2021_12_04_adjust.png',pixel_list=[3])
 
 # Berechnung für alle Pixel:
+runtime_list_min = []
+injectiontime_list_min = []
 for j in range(1,16):
     # Geschwindigkeit:
     # Korrektur, da Energie-Mittelwerte in keV angegeben sind.
@@ -121,6 +123,9 @@ for j in range(1,16):
     run_time2 = [int(i) for i in np.rint(run_time2)]
     injection_time = np.rint(dat.injection_time(popt[0],popt[1]))
     injection_time2 = np.rint(dat.injection_time(popt2[0],popt2[1]))
+
+    runtime_list_min.append(run_time2)
+    injectiontime_list_min.append(injection_time2)
     
     print(f'Injektionszeit Pixel {j}:')
     print('fünf-minütlich: ',injection_time)
@@ -148,3 +153,37 @@ for j in range(1,16):
     ax1.legend(loc='upper left')
     ax2.legend(loc='lower right')
     plt.savefig(f'runtime_test2/test_runtime_sliding_window_pixel{j}_2021_12_04_adjust.png')
+    plt.close()
+
+runtime_list_min = np.array(runtime_list_min)
+injectiontime_list_min = np.array(injectiontime_list_min)
+
+
+### Schaue mir an, ob Laufzeitverhältnis zu Verhältnis der Pitchwinkel passt... ###
+
+# Vergleiche Pixel drei mit fünf; erstmal minütliche Zeitauflösung
+i = 3
+j = 5
+
+# Einschränkung der Pitchwinkel auf period über Maske
+pw_mask = (dat.mag.time >= period[0]) * (dat.mag.time < period[1])
+
+ratio_pitch = dat.mag.pitchangles[i][pw_mask]/dat.mag.pitchangles[j][pw_mask]
+ratio_runtime = runtime_list_min[j]/runtime_list_min[i]
+
+print(len(ratio_pitch),len(ratio_runtime))
+
+ts2_datetime = np.array([dt.datetime.fromtimestamp(k) for k in (np.rint(ts2)).astype(int)])
+ts_mag = dat.mag.time[pw_mask]
+
+print(ts2_datetime)
+print(ts_mag)
+
+fig, ax = plt.subplots(figsize=(10,6))
+
+plt.plot(ts2_datetime,ratio_runtime,label='ratio runtime')
+plt.plot(ts_mag,ratio_pitch,label='ratio pitch angle')
+plt.xlabel('time')
+plt.ylabel('ratio')
+plt.legend()
+plt.savefig(f'runtime_test2/comparison_ratios_pixel_{i}_to_{j}.png')

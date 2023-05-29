@@ -28,8 +28,9 @@ hmap = mpl.cm.seismic
 
 
 class STEP():
-    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = '/data/projects/solo/mag/l2_soar/rtn_1minute',magnet=False,lastofmonth=False):
-        '''Magnetfeld wird gleich mitgeladen, wenn magnet == True.'''
+    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = None,magnet_default_path=False,lastofmonth=False):
+        '''Magnetfeld wird gleich mitgeladen, wenn rpath_mag übergeben wird. Wird magnet_default_path auf True gesetzt wird automatisch der 
+        korrekte Dateipfad für die Uni-Rechner genutzt.'''
         self.ebins = ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
          3.6  ,   3.92 ,   4.288,   4.672,   5.088,   5.568,   6.08 ,
          6.624,   7.2  ,   7.84 ,   8.576,   9.344,  10.176,  11.136,
@@ -55,7 +56,11 @@ class STEP():
         print('STEP-Data combined successfully.')
         
         # Loading MAG-Data
-        if magnet == True:
+        if magnet_default_path == True:
+            self.magnet_default_path = '/data/projects/solo/mag/l2_soar/rtn_1minute'
+            rpath_mag = self.magnet_default_path
+
+        if type(rpath_mag) == str:
             if lastofmonth:
                 if month!=12:
                     self.mag = mag.MAGdata(path = rpath_mag, period = (dt.datetime(year,month,day),dt.datetime(year,month+1,1)))

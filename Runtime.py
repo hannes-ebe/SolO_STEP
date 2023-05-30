@@ -70,8 +70,6 @@ period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,14,30))
 
 # Alte Berechnung über alle Daten:
 
-# Einschränkung auf ersten Teil nicht über period, sondern manuell. Sonst würde mir box_list wahrcheinlich um die Ohren fliegen...
-
 pixel_means = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list)
 pixel_means2 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list, window_width=1)
 
@@ -176,8 +174,8 @@ print(len(ratio_pitch),len(ratio_runtime))
 ts2_datetime = np.array([dt.datetime.fromtimestamp(k) for k in (np.rint(ts2)).astype(int)])
 ts_mag = dat.mag.time[pw_mask]
 
-print(ts2_datetime)
-print(ts_mag)
+# print(ts2_datetime)
+# print(ts_mag)
 
 fig, ax = plt.subplots(figsize=(10,6))
 

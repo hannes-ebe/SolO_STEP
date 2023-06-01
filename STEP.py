@@ -193,17 +193,22 @@ class STEP():
             box_data.append(ayuda)
         return box_data
     
-    def cut_straight_line(self,pldat,time_ind = (0,10),e_ind = (0,10)):
-        '''Funktion, um Daten unterhalb einer Geraden in den 2d-Arrays der STEP-Daten zu entfernen. Ähnliche Funktionsweise, wie data_boxes().
-        Werte ohne counts werden mit 0.0  gefüllt, um bei der Mittelwertsbildung egal zu sein. Vorsichtig sein!!! Funktion wird für Spezialfälle fehleranfällig sein!'''
-        modified_data = []
-        # Loope  durch die Pixel
+    def create_masks(self,grenzfunktion,shape):
+        '''Übergebe eine Grenzfunktion als Funktion der Indizes der zweiten array-Dimension (Zeitreihe). Die Grenzfunktion berechnet dann den Index in der ersten array-Dimension (Energie-Bins),
+        ab dem die Daten beginnen sollen. Beachte: Die Energie-Bins werden im STEP-Plot von unten nach oben gezählt.'''
+        len_ebins = shape[0]
+        len_time = shape[1]
+        a = np.ones((len_ebins,len_time))
+        for i in range(len_ebins):
+            a[i,:]*=i    # Setze in erster array-Dimension die Werte auf den entsprechenden Index
+        mask = a < grenzfunktion(np.arange(len_time))[np.newaxis,:]
+        return mask
+    
+    def set_zero(self,pldat,mask):
+        '''Übergebe eine Maske und die Daten aller Pixel. Werte, die laut Maske True sind, werden auf 0 gesetzt.'''
         for pdat in pldat:
-            ayuda = np.zeros(shape=(len(pdat),len(pdat.T)),dtype='float')
-            # Hier aus den Start- und Endindizes für time und energy eine lineare Funktion basteln...
-        
-        modified_data.append(ayuda)
-        return modified_data
+            pdat[mask] = 0
+        return pldat
 
 
     def step_plot(self,xlabel,ylabel,title):
@@ -232,8 +237,9 @@ class STEP():
         ax[0].set_title(title)
         return fig, ax
     
-    def plot_ts(self,ebins=ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False, box_list= False):
-        '''Plottet die Zeitreihen der Energien. Übergebe verschachtelte Liste mit Grenzen für Boxen, die eingezeichnet werden. Grenzen als Indizes der Listen übergeben.'''
+    def plot_ts(self,ebins=ebins,res = '1min', head = 0, period = None, save = False, norm = False, overflow = True, esquare = False, grenzfunktion = None, box_list= False):
+        '''Plottet die Zeitreihen der Energien. Übergebe verschachtelte Liste mit Grenzen für Boxen, die eingezeichnet werden. Grenzen als Indizes der Listen übergeben.
+        Wenn sowohl box_list als auch grenzfunktion gegeben sind, wird grenzfunktion genutzt und eingezeichnet.'''
         pldat, pltime, vmax = self.data_prep(ebins,res,head,period,norm,overflow,esquare)
         fig, ax = self.step_plot('Date', 'Energy [keV]', 'Head %i'%head)
         for i in range(16):
@@ -323,6 +329,14 @@ class STEP():
                 elif norm == 'emax':
                     tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
                 
+            if grenzfunktion != None:
+                x_ind = np.arange(len(ptime))
+                y_ind = grenzfunktion(x_ind)
+                ayuda_mask = (y_ind < len(ebins)-1) * (y_ind > 0)
+                x = ptime[ayuda_mask]
+                y = ebins[y_ind]
+                ax[i].step(x,y,where='post')
+            
             # PLots der Boxen, Grenzen als  Indizes übergeben.
             # Erster Index von pdat müsste die Zeitreihe sein, der zweite der Energie-Bin.
             # [[[timelow,timeup],[energylow,energyup]],[[timelow,timeup],[energylow,energyup]]]
@@ -365,13 +379,21 @@ class STEP():
                 #plt.savefig('TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
         print('Plotted TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res) + ' successfully.')
         
-    def calc_energy_means(self,ebins=ebins,res = '1min', head = -1, period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)), box_list=None, window_width=5, pixel_list=[i for i in range(1,16)], norm = 'tmax', overflow = True, esquare = False):
+    def calc_energy_means(self,ebins=ebins,res = '1min', head = -1, period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)), grenzfunktion=None, below=True, box_list=None, window_width=5, pixel_list=[i for i in range(1,16)], norm = 'tmax', overflow = True, esquare = False):
         '''Wichtig: Die Energie ist in keV angegeben!!!
-        Falls andere Zeitauflösung als Minuten gewählt wird, kann es Probleme mit window_width und der Berechnung der Zeit geben.'''
+        Falls andere Zeitauflösung als Minuten gewählt wird, kann es Probleme mit window_width und der Berechnung der Zeit geben.
+        below gehört zu grenzfunktion und gibt an, ob die Werte über oder unter der Funktion auf Null gesetzt werden.
+        Wenn sowohl box_list als auch  grenzfunktion gegeben sind, wird grenzfunktion genutzt.'''
         i = 0
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
-        if type(box_list) == list:
+        if grenzfunktion != None:
+            little_helper_dat = np.array(self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0])
+            mask = self.create_masks(grenzfunktion=grenzfunktion,shape=little_helper_dat.shape)
+            if below == False:
+                mask = ~mask  # Tilde invertiert (logical-not)
+            pldat = self.set_zero(little_helper_dat,mask)
+        elif type(box_list) == list:
             little_helper_dat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
             pldat = self.data_boxes(little_helper_dat,box_list)
         else:
@@ -399,15 +421,22 @@ class STEP():
             
         return pixel_means
     
-    def calc_sliding_energy_means(self,ebins=ebins,res = '1min', head = -1, period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)), box_list=None, window_width=5, sliding_width=4, pixel_list=[i for i in range(1,16)], norm = 'tmax', overflow = True, esquare = False):
+    def calc_sliding_energy_means(self,ebins=ebins,res = '1min', head = -1, period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)), grenzfunktion=None, below=True, box_list=None, window_width=5, sliding_width=4, pixel_list=[i for i in range(1,16)], norm = 'tmax', overflow = True, esquare = False):
         '''Wichtig: Die Energie ist in keV angegeben!!!
         Falls andere Zeitauflösung als Minuten gewählt wird, kann es Probleme mit window_width und der Berechnung der Zeit geben.
         Nehme immer vier benachbarte energy-bins und berechne den Mittelwert (Sowohl der normierten counts und der Energie). Dieses Fenster gleitet über alle bins. 
-        Nehme dann aus diesen Werten den maximalen Wert. Versuche so die Effekte der Daten-Boxen zu minimieren, weil die Tail-Länge an der Seite den Mittelwert beeinflusst.'''
+        Nehme dann aus diesen Werten den maximalen Wert. Versuche so die Effekte der Daten-Boxen zu minimieren, weil die Tail-Länge an der Seite den Mittelwert beeinflusst.
+        Wenn sowohl box_list als auch  grenzfunktion gegeben sind, wird grenzfunktion genutzt.'''
         i = 0
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
-        if type(box_list) == list:
+        if grenzfunktion != None:
+            little_helper_dat = np.array(self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0])
+            mask = self.create_masks(grenzfunktion=grenzfunktion,shape=little_helper_dat.shape)
+            if below == False:
+                mask = ~mask  # Tilde invertiert (logical-not)
+            pldat = self.set_zero(little_helper_dat,mask)
+        elif type(box_list) == list:
             little_helper_dat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
             pldat = self.data_boxes(little_helper_dat,box_list)
         else:

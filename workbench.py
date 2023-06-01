@@ -81,14 +81,75 @@ def plausibility_check(B_phi,B_theta):
 
 
 
-### Herausrechnen der Pitchwinkeleffekte aus den Energie-Mittelwerten ###
+### Funktion als Maske benutzen ###
 
-# dat = STEP(2021,12,4)
+a = np.ones((30,20))
+# print(a)
 
-# box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
-# period = [dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)]
+for i in range(20):
+    a[:,i]*=i
+# print(a)
 
-# dat.wrapper_distribution_ring('21_12_04_electrons_pw_inverse', head=-1, norm='tmax', period=period, box_list=box_list, norm_pixel=3, correction=True, save='test_pitchangle_correction/')
+def g(t):
+    return t+1
+
+# m = a < g(np.arange(30))[:,np.newaxis]
+# print(m)
+# print(g(np.arange(30))[:,np.newaxis])
+# print(g(np.arange(30)))
+# print(a[m])
+# b = 1.0*a
+# a[~m] = 0    # Tilde invertiert den boolschen Wert???
+# print(a[~m])
+# tmp = plt.pcolormesh(a.T)
+# plt.colorbar(tmp)
+# plt.show()
+
+
+ebins = np.array([0.98 ,2.144,2.336,2.544,2.784,3.04,3.312])
+data = np.array([[200,200,50,50,50,300],[200,50,50,50,300,50],[200,50,50,300,50,50],[50,50,300,50,50,50],[50,50,300,50,50,50],[50,50,300,50,50,50],[50,300,50,50,50,50],[50,300,50,50,50,50],[50,300,50,50,50,50],[300,50,50,50,50,50],[300,50,50,50,50,50],[300,50,50,50,50,50]]).T
+print(data.shape)
+print(data)
+
+# Wie genau funktioniert die  Grenzfunktion???
+
+def create_masks(grenzfunktion,shape):
+    '''Übergebe eine Grenzfunktion als Funktion der Indizes der zweiten array-Dimension (Zeitreihe). Die Grenzfunktion berechnet dann den Index in der ersten array-Dimension (Energie-Bins),
+    ab dem die Daten beginnen sollen. Beachte: Die Energie-Bins werden im STEP-Plot von unten nach oben gezählt.'''
+    len_ebins = shape[0]
+    len_time = shape[1]
+    a = np.ones((len_ebins,len_time))
+    for i in range(len_ebins):
+        a[i,:]*=i    # Setze in erster array-Dimension die Werte auf den entsprechenden Index
+    mask = a < grenzfunktion(np.arange(len_time))[np.newaxis,:]
+    return mask
+
+def grenz(i):
+    return -i**0.5 + 2
+
+mask = create_masks(grenz,data.shape)
+print(mask)
+print(~mask)
+data[mask] = 0
+print(data)
+
+
+def func():
+    pass
+print(type(func)==func)
 
 
 
+tmp = plt.pcolormesh(data)
+plt.colorbar(tmp)
+# plt.yscale('log')
+# plt.show()
+
+
+# b = 1.*a
+# b[~m] = 0 
+
+# Energies = array([1,3,6,...,100])
+# Earr = zeros(Datenarry.shape)
+# Earr[:] = Energies
+# MittlereEnergien = (Datenarray * Earr).sum(axis = 1)/Datenarray.sum(axis = 1)

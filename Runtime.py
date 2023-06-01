@@ -70,13 +70,16 @@ period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,14,30))
 
 # Alte Berechnung über alle Daten:
 
-pixel_means = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list)
-pixel_means2 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, box_list=box_list, window_width=1)
+def grenz(t):
+    return -t**2 + 10
+
+pixel_means = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz)
+pixel_means2 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, window_width=1)
 
 dat.plot_energy_means(pixel_means,'runtime_test2/energy_means_5_minutes_pixel3_2021_12_04_adjust.png',pixel_list=[3])
 dat.plot_energy_means(pixel_means2,'runtime_test2/energy_means_1_minute_pixel3_2021_12_04_adjust.png',pixel_list=[3])
 
-dat.plot_ts(period=period, head=-1, save='runtime_test2/', norm='tmax',box_list=box_list)
+dat.plot_ts(period=period, head=-1, save='runtime_test2/', norm='tmax',grenzfunktion=grenz)
 
 ### Berechnung mit Sliding-Window:
 

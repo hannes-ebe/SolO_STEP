@@ -329,13 +329,13 @@ class STEP():
                 elif norm == 'emax':
                     tmp = ax[i].pcolormesh(ptime,ebins,(pdat/vmax).T, cmap = cmap, vmin = np.amin(1/vmax)*0.99,vmax = 1.)
                 
-            if grenzfunktion != None:
+            if callable(grenzfunktion):
                 x_ind = np.arange(len(ptime))
-                y_ind = grenzfunktion(x_ind)
-                ayuda_mask = (y_ind < len(ebins)-1) * (y_ind > 0)
+                y_ind = (np.rint(grenzfunktion(x_ind))).astype(int)
+                ayuda_mask = (y_ind < len(ebins)-1) * (y_ind >= 0)
                 x = ptime[ayuda_mask]
-                y = ebins[y_ind]
-                ax[i].step(x,y,where='post')
+                y = ebins[y_ind[ayuda_mask]]
+                ax[i].step(x,y,where='post',color='tab:red')
             
             # PLots der Boxen, Grenzen als  Indizes übergeben.
             # Erster Index von pdat müsste die Zeitreihe sein, der zweite der Energie-Bin.
@@ -387,9 +387,12 @@ class STEP():
         i = 0
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
-        if grenzfunktion != None:
+        if callable(grenzfunktion):
             little_helper_dat = np.array(self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0])
             mask = self.create_masks(grenzfunktion=grenzfunktion,shape=little_helper_dat.shape)
+            print(little_helper_dat)
+            print(mask)
+            print(len(little_helper_dat[3][3]))
             if below == False:
                 mask = ~mask  # Tilde invertiert (logical-not)
             pldat = self.set_zero(little_helper_dat,mask)
@@ -430,7 +433,7 @@ class STEP():
         i = 0
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
-        if grenzfunktion != None:
+        if callable(grenzfunktion):
             little_helper_dat = np.array(self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0])
             mask = self.create_masks(grenzfunktion=grenzfunktion,shape=little_helper_dat.shape)
             if below == False:

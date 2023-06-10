@@ -194,7 +194,7 @@ class STEP():
         return box_data
     
     def create_masks(self,grenzfunktion,shape):
-        '''Übergebe eine Grenzfunktion als Funktion der Indizes der zweiten array-Dimension (Zeitreihe). Die Grenzfunktion berechnet dann den Index in der ersten array-Dimension (Energie-Bins),
+        '''Übergebe eine Grenzfunktion als Funktion der Indizes der ersten array-Dimension (Zeitreihe). Die Grenzfunktion berechnet dann den Index in der nullten array-Dimension (Energie-Bins),
         ab dem die Daten beginnen sollen. Beachte: Die Energie-Bins werden im STEP-Plot von unten nach oben gezählt.'''
         len_ebins = shape[0]
         len_time = shape[1]
@@ -389,13 +389,17 @@ class STEP():
         
         if callable(grenzfunktion):
             little_helper_dat = np.array(self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0])
-            mask = self.create_masks(grenzfunktion=grenzfunktion,shape=little_helper_dat.shape)
-            print(little_helper_dat)
-            print(mask)
+            for i,pdat in enumerate(little_helper_dat):
+                # Transponieren scheint hier notwendig zu sein, damit Zeit und Energie den korrekten array-Dimensionen entsprechen...
+                ayuda_shape = (pdat.shape[1],pdat.shape[0])
+                mask = self.create_masks(grenzfunktion=grenzfunktion,shape=ayuda_shape)
+                if below == False:
+                    mask = ~mask  # Tilde invertiert (logical-not)
+                little_helper_dat[i] = self.set_zero(little_helper_dat[i].T,mask)
+            print(little_helper_dat[3][3])
+            print(mask[3])
             print(len(little_helper_dat[3][3]))
-            if below == False:
-                mask = ~mask  # Tilde invertiert (logical-not)
-            pldat = self.set_zero(little_helper_dat,mask)
+            print(little_helper_dat.shape)
         elif type(box_list) == list:
             little_helper_dat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
             pldat = self.data_boxes(little_helper_dat,box_list)

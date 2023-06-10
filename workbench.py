@@ -132,6 +132,7 @@ print(mask)
 print(~mask)
 data[mask] = 0
 print(data)
+print(data.shape)
 
 
 def func():

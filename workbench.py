@@ -108,8 +108,7 @@ def g(t):
 
 ebins = np.array([0.98 ,2.144,2.336,2.544,2.784,3.04,3.312])
 data = np.array([[200,200,50,50,50,300],[200,50,50,50,300,50],[200,50,50,300,50,50],[50,50,300,50,50,50],[50,50,300,50,50,50],[50,50,300,50,50,50],[50,300,50,50,50,50],[50,300,50,50,50,50],[50,300,50,50,50,50],[300,50,50,50,50,50],[300,50,50,50,50,50],[300,50,50,50,50,50]]).T
-print(data.shape)
-print(data)
+
 
 # Wie genau funktioniert die  Grenzfunktion???
 
@@ -128,11 +127,9 @@ def grenz(i):
     return -i**0.5 + 2
 
 mask = create_masks(grenz,data.shape)
-print(mask)
-print(~mask)
+
 data[mask] = 0
-print(data)
-print(data.shape)
+
 
 
 def func():
@@ -142,7 +139,7 @@ print(type(func)==func)
 
 
 tmp = plt.pcolormesh(data)
-plt.colorbar(tmp)
+# plt.colorbar(tmp)
 # plt.yscale('log')
 # plt.show()
 
@@ -150,7 +147,14 @@ plt.colorbar(tmp)
 # b = 1.*a
 # b[~m] = 0 
 
-# Energies = array([1,3,6,...,100])
-# Earr = zeros(Datenarry.shape)
-# Earr[:] = Energies
-# MittlereEnergien = (Datenarray * Earr).sum(axis = 1)/Datenarray.sum(axis = 1)
+Energies = np.array([1,3,6,10])
+Datenarray = np.array([100,200,300,100])
+print(Datenarray)
+Earr = np.zeros(Datenarray.shape)
+print(Earr)
+print(Earr[:])
+Earr[:] = Energies
+print(Earr)
+print(Earr[:])
+MittlereEnergien = (Datenarray * Earr).sum(axis = 1)/Datenarray.sum(axis = 1)
+print(MittlereEnergien)

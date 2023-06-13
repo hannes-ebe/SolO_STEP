@@ -388,39 +388,58 @@ class STEP():
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
         if callable(grenzfunktion):
+            '''Bereite zunächst little_helper_dat vor und erzeuge dann eine Maske, die ja auf alle Pixel angewendet werden kann.
+            Anschließend wird set_zero die eine Maske und ein array mit allen Pixeln übergeben, um die entsprechenden Werte auf 
+            Null zu setzen.'''
             little_helper_dat = np.array(self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0])
-            for i,pdat in enumerate(little_helper_dat):
-                # Transponieren scheint hier notwendig zu sein, damit Zeit und Energie den korrekten array-Dimensionen entsprechen...
-                ayuda_shape = (pdat.shape[1],pdat.shape[0])
-                mask = self.create_masks(grenzfunktion=grenzfunktion,shape=ayuda_shape)
-                if below == False:
-                    mask = ~mask  # Tilde invertiert (logical-not)
-                little_helper_dat[i] = self.set_zero(little_helper_dat[i].T,mask)
-            print(little_helper_dat[3][3])
-            print(mask[3])
-            print(len(little_helper_dat[3][3]))
-            print(little_helper_dat.shape)
+            # Transponieren scheint hier notwendig zu sein, damit Zeit und Energie den korrekten array-Dimensionen entsprechen...
+            # Nutze ersten Eintrag in little_helper_dat, shape sollte für alle Pixel gleich sein.
+            ayuda_shape = (little_helper_dat[0].shape[1],little_helper_dat[0].shape[0])
+            mask = self.create_masks(grenzfunktion=grenzfunktion,shape=ayuda_shape)
+            if below == False:
+                mask = ~mask  # Tilde invertiert (logical-not)
+            pldat = self.set_zero(little_helper_dat,mask.T)
+            
         elif type(box_list) == list:
             little_helper_dat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
             pldat = self.data_boxes(little_helper_dat,box_list)
         else:
             pldat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
 
+        # Mittelwerte der einzelnen Energie-Bins
+        mittelwerte_energie_bins = []
+        for k in range(len(ebins)-1):
+            mittelwerte_energie_bins.append(0.5*(ebins[k+1]+ebins[k]))
+        mittelwerte_energie_bins = np.array(mittelwerte_energie_bins)
+
         while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
             pixel_means[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
             
-            # Berechnung der Mittelwerte:
+            # Alte Berechnung der Mittelwerte:
+
+            # for k in pixel_list:
+            #     pdat = pldat[k][i*window_width:(i+1)*window_width]
+            #     integral = np.sum(pdat,axis=0)
+            #     # calculating mean
+            #     mean = 0.0
+            #     for j in range(len(integral)):
+            #         # Für Bestimmung des Mittelwertes der Verteilung wird Mitte der Bins gewählt
+            #         mean += integral[j]*0.5*(ebins[j+1]+ebins[j])
+            #     mean = mean/np.sum(integral)
+            #     pixel_means[k].append(mean)
+            # i +=1
+
+
+            # Neue Berechnung der Mittelwerte 
+            
             for k in pixel_list:
                 pdat = pldat[k][i*window_width:(i+1)*window_width]
                 integral = np.sum(pdat,axis=0)
                 # calculating mean
-                mean = 0.0
-                for j in range(len(integral)):
-                    # Für Bestimmung des Mittelwertes der Verteilung wird Mitte der Bins gewählt
-                    mean += integral[j]*0.5*(ebins[j+1]+ebins[j])
-                mean = mean/np.sum(integral)
+                mean = np.sum(mittelwerte_energie_bins*integral)/np.sum(integral)
                 pixel_means[k].append(mean)
             i +=1
+            
         
         for i in range(len(pixel_means)):
             # Array erstellen
@@ -438,11 +457,18 @@ class STEP():
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
         
         if callable(grenzfunktion):
+            '''Bereite zunächst little_helper_dat vor und erzeuge dann eine Maske, die ja auf alle Pixel angewendet werden kann.
+            Anschließend wird set_zero die eine Maske und ein array mit allen Pixeln übergeben, um die entsprechenden Werte auf 
+            Null zu setzen.'''
             little_helper_dat = np.array(self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0])
-            mask = self.create_masks(grenzfunktion=grenzfunktion,shape=little_helper_dat.shape)
+            # Transponieren scheint hier notwendig zu sein, damit Zeit und Energie den korrekten array-Dimensionen entsprechen...
+            # Nutze ersten Eintrag in little_helper_dat, shape sollte für alle Pixel gleich sein.
+            ayuda_shape = (little_helper_dat[0].shape[1],little_helper_dat[0].shape[0])
+            mask = self.create_masks(grenzfunktion=grenzfunktion,shape=ayuda_shape)
             if below == False:
                 mask = ~mask  # Tilde invertiert (logical-not)
-            pldat = self.set_zero(little_helper_dat,mask)
+            pldat = self.set_zero(little_helper_dat,mask.T)
+            
         elif type(box_list) == list:
             little_helper_dat = self.data_prep(ebins,res,head,period,norm,overflow,esquare)[0]
             pldat = self.data_boxes(little_helper_dat,box_list)

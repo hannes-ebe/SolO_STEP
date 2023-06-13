@@ -57,8 +57,8 @@ class STEP_Runtime(STEP):
 
 
 
-# dat = STEP_Runtime(2021, 12, 4)
-dat = STEP_Runtime(2021, 12, 4, rpath='data/STEP/',rpath_mag='data/mag/')
+dat = STEP_Runtime(2021, 12, 4)
+# dat = STEP_Runtime(2021, 12, 4, rpath='data/STEP/',rpath_mag='data/mag/')
 
 # box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,80],[20,25]],[[30,120],[15,20]],[[40,155],[10,15]],[[50,170],[3,10]]]
 # period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30))
@@ -79,8 +79,10 @@ dat.plot_ts(period=period, head=-1, save='runtime_test2/', norm='tmax',grenzfunk
 pixel_means = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz)
 pixel_means2 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, window_width=1)
 
-dat.plot_energy_means(pixel_means,'runtime_test2/energy_means_5_minutes_pixel3_2021_12_04_adjust.png',pixel_list=[3])
-dat.plot_energy_means(pixel_means2,'runtime_test2/energy_means_1_minute_pixel3_2021_12_04_adjust.png',pixel_list=[3])
+
+# dat.plot_energy_means(pixel_means,'runtime_test2/energy_means_5_minutes_pixel3_2021_12_04_adjust.png',pixel_list=[3])
+# dat.plot_energy_means(pixel_means2,'runtime_test2/energy_means_1_minute_pixel3_2021_12_04_adjust.png',pixel_list=[3])
+
 
 
 ### Berechnung mit Sliding-Window:
@@ -94,6 +96,7 @@ dat.plot_energy_means(pixel_means2,'runtime_test2/energy_means_1_minute_pixel3_2
 # Berechnung für alle Pixel:
 runtime_list_min = []
 injectiontime_list_min = []
+datetime_list_min = []
 for j in range(1,16):
     # Geschwindigkeit:
     # Korrektur, da Energie-Mittelwerte in keV angegeben sind.
@@ -129,6 +132,7 @@ for j in range(1,16):
 
     runtime_list_min.append(run_time2)
     injectiontime_list_min.append(injection_time2)
+    datetime_list_min.append(pixel_means2[0][mask2])
     
     print(f'Injektionszeit Pixel {j}:')
     print('fünf-minütlich: ',injection_time)
@@ -158,8 +162,15 @@ for j in range(1,16):
     plt.savefig(f'runtime_test2/test_runtime_sliding_window_pixel{j}_2021_12_04_adjust.png')
     plt.close()
 
-runtime_list_min = np.array(runtime_list_min)
-injectiontime_list_min = np.array(injectiontime_list_min)
+plt.close('all')
+
+# =============================================================================
+# print(runtime_list_min)
+# runtime_list_min = np.asarray(runtime_list_min)
+# injectiontime_list_min = np.asarray(injectiontime_list_min)
+# 
+# print(runtime_list_min)
+# =============================================================================
 
 
 ### Schaue mir an, ob Laufzeitverhältnis zu Verhältnis der Pitchwinkel passt... ###
@@ -168,25 +179,43 @@ injectiontime_list_min = np.array(injectiontime_list_min)
 i = 3
 j = 5
 
+dat.plot_energy_means(pixel_means,f'runtime_test2/energy_means_5_minutes_pixel_{i}_and_{j}_2021_12_04_adjust.png',pixel_list=[i,j])
+dat.plot_energy_means(pixel_means2,f'runtime_test2/energy_means_1_minute_pixel_{i}_and_{j}_2021_12_04_adjust.png',pixel_list=[i,j])
+plt.close('all')
+
 # Einschränkung der Pitchwinkel auf period über Maske
 pw_mask = (dat.mag.time >= period[0]) * (dat.mag.time < period[1])
 
-ratio_pitch = dat.mag.pitchangles[i][pw_mask]/dat.mag.pitchangles[j][pw_mask]
-ratio_runtime = runtime_list_min[j]/runtime_list_min[i]
 
-print(len(ratio_pitch),len(ratio_runtime))
+
+ratio_pitch = dat.mag.pitchangles[i][pw_mask]/dat.mag.pitchangles[j][pw_mask]
+
+# Bestimme die Laufzeit nur, wenn für das entsprchende datetime-Objekt für beide Pixel ein Wert voliegt.
+# Sehr unschöne brute-force-Methode... Bin noch nicht glücklich...
+ratio_runtime = []
+time_ratio_runtime = []
+for count_i, datetime_object_i in enumerate(datetime_list_min[i]):
+    for count_j, datetime_object_j in enumerate(datetime_list_min[j]):
+        if (datetime_object_i == datetime_object_j):
+            ratio_runtime.append(runtime_list_min[j][count_j]/runtime_list_min[i][count_j])
+            time_ratio_runtime.append(datetime_object_i)
+            break
+            
+
+
 
 ts2_datetime = np.array([dt.datetime.fromtimestamp(k) for k in (np.rint(ts2)).astype(int)])
 ts_mag = dat.mag.time[pw_mask]
 
-# print(ts2_datetime)
-# print(ts_mag)
+
 
 fig, ax = plt.subplots(figsize=(10,6))
 
-plt.plot(ts2_datetime,ratio_runtime,label='ratio runtime')
+
+plt.plot(time_ratio_runtime,ratio_runtime,label='ratio runtime')
 plt.plot(ts_mag,ratio_pitch,label='ratio pitch angle')
 plt.xlabel('time')
 plt.ylabel('ratio')
 plt.legend()
 plt.savefig(f'runtime_test2/comparison_ratios_pixel_{i}_to_{j}.png')
+plt.close('all')

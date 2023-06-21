@@ -66,12 +66,13 @@ dat = STEP_Runtime(2021, 12, 4)
 # Daten auf Teil angeschränkt, der für Analyse relevant ist...
 
 box_list = [[[15,35],[30,38]],[[20,45],[25,30]],[[26,60],[20,25]],[[30,60],[15,20]],[[40,60],[10,15]],[[50,60],[3,10]]]
-period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,14,30))
+# period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,14,30))
+period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
 
 # Alte Berechnung über alle Daten:
 
 def grenz(t):
-    return -0.5*t + 29
+    return -0.5*t + 20
 
 
 dat.plot_ts(period=period, head=-1, save='runtime_test2/', norm='tmax',grenzfunktion=grenz)
@@ -153,13 +154,13 @@ for j in range(1,16):
     ax2.plot(ts,run_time,label='run time (five minutes)',c='red')
     ax2.plot(ts2,run_time2,label='run time (one minute)',c='green')
     
-    plt.title(f'sliding mean; pixel {j}; 2021-12-04')
+    plt.title(f'pixel {j}; 2021-12-04')
     ax1.set_xlabel('unix time stamp [s]')
     ax1.set_ylabel(r'$v^{-1}~[\frac{\mathrm{s}}{\mathrm{m}}]$')
     ax2.set_ylabel(r'run time [s]')
     ax1.legend(loc='upper left')
     ax2.legend(loc='lower right')
-    plt.savefig(f'runtime_test2/test_runtime_sliding_window_pixel{j}_2021_12_04_adjust.png')
+    plt.savefig(f'runtime_test2/test_runtime_pixel{j}_2021_12_04_adjust.png')
     plt.close()
 
 plt.close('all')
@@ -173,11 +174,21 @@ plt.close('all')
 # =============================================================================
 
 
+
+dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,norm='tmax',save='runtime_test2/',period=period,grenzfunktion=grenz,below=True)
+
+
+
+
+
 ### Schaue mir an, ob Laufzeitverhältnis zu Verhältnis der Pitchwinkel passt... ###
 
-# Vergleiche Pixel drei mit fünf; erstmal minütliche Zeitauflösung
+# Vergleiche Pixel drei mit dreizehn; erstmal minütliche Zeitauflösung
 i = 3
-j = 5
+j = 13
+
+dat.plot_energy_means(pixel_means,f'runtime_test2/energy_means_5_minutes_pixel{i}_2021_12_04_adjust.png',pixel_list=[i])
+dat.plot_energy_means(pixel_means2,f'runtime_test2/energy_means_1_minute_pixel{i}_2021_12_04_adjust.png',pixel_list=[i])
 
 dat.plot_energy_means(pixel_means,f'runtime_test2/energy_means_5_minutes_pixel_{i}_and_{j}_2021_12_04_adjust.png',pixel_list=[i,j])
 dat.plot_energy_means(pixel_means2,f'runtime_test2/energy_means_1_minute_pixel_{i}_and_{j}_2021_12_04_adjust.png',pixel_list=[i,j])
@@ -187,8 +198,9 @@ plt.close('all')
 pw_mask = (dat.mag.time >= period[0]) * (dat.mag.time < period[1])
 
 
+# Muss Cosinus-Ausdrücke ansehen...
 
-ratio_pitch = dat.mag.pitchangles[i][pw_mask]/dat.mag.pitchangles[j][pw_mask]
+ratio_pitch = np.cos(dat.mag.pitchangles[i][pw_mask])/np.cos(dat.mag.pitchangles[j][pw_mask])
 
 # Bestimme die Laufzeit nur, wenn für das entsprchende datetime-Objekt für beide Pixel ein Wert voliegt.
 # Sehr unschöne brute-force-Methode... Bin noch nicht glücklich...
@@ -197,9 +209,9 @@ time_ratio_runtime = []
 for count_i, datetime_object_i in enumerate(datetime_list_min[i]):
     for count_j, datetime_object_j in enumerate(datetime_list_min[j]):
         if (datetime_object_i == datetime_object_j):
-            ratio_runtime.append(runtime_list_min[j][count_j]/runtime_list_min[i][count_j])
+            ratio_runtime.append(runtime_list_min[j][count_j]/runtime_list_min[i][count_i])
             time_ratio_runtime.append(datetime_object_i)
-            break
+            # break
             
 
 
@@ -214,6 +226,7 @@ fig, ax = plt.subplots(figsize=(10,6))
 
 plt.plot(time_ratio_runtime,ratio_runtime,label='ratio runtime')
 plt.plot(ts_mag,ratio_pitch,label='ratio pitch angle')
+plt.title(f'ratios for pixels {i} and {j}')
 plt.xlabel('time')
 plt.ylabel('ratio')
 plt.legend()

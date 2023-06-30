@@ -7,9 +7,11 @@ import load_nom_II as ld
 import plot_nom_II as pt
 import math
 import mag
+import matplotlib.gridspec as gridspec
 
 from PIL import Image
 import glob
+import os
 
 from scipy.optimize import curve_fit
 
@@ -379,6 +381,26 @@ class STEP():
                 #plt.savefig('TS_%i_%.2i:%.2i:%.2i-%i_%.2i:%.2i:%.2i_H%i_%s_%s.pdf'%(ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res))
         print('Plotted TS_%.4i_%.2i_%.2i_%.2i-%.2i-%.2i-%i_%.2i-%.2i-%.2i_H%i_%s_%s.png'%(ptime[0].year,ptime[0].month,ptime[0].day,ptime[0].hour,ptime[0].minute,ptime[0].second,ptime[-2].day,ptime[-2].hour,ptime[-2].minute,ptime[-2].second,head,norm,res) + ' successfully.')
         
+        
+    def calc_pw(self,period,window_width=5):
+        '''Berechnung der Pitchwinkel'''
+        # Maske, da ich nur die Magnetfelddaten innerhalb von period brauche:
+        mask = (self.mag.time > period[0]) * (self.mag.time <= period[1])
+        pw = [[] for i in range(15)]
+        
+        i = 0
+        while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
+            
+            for k in [i for i in range(1,16)]:
+                # Mittelung der Pitchwinkel (k-1, da ich keine Zeit im array stehen habe)
+                pw_data = self.mag.pitchangles[k-1][mask]
+                new_pw = np.sum(pw_data[i*window_width:(i+1)*window_width])/window_width
+                pw[k-1].append(new_pw)
+            i +=1
+        return pw
+
+    
+    
     def calc_energy_means(self,ebins=ebins,res = '1min', head = -1, period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)), grenzfunktion=None, below=True, box_list=None, window_width=5, pixel_list=[i for i in range(1,16)], norm = 'tmax', overflow = True, esquare = False):
         '''Wichtig: Die Energie ist in keV angegeben!!!
         Falls andere Zeitauflösung als Minuten gewählt wird, kann es Probleme mit window_width und der Berechnung der Zeit geben.
@@ -520,32 +542,60 @@ class STEP():
         plt.legend()
         plt.savefig(rpath)
         
+    def pixel_comparison(self, pixel_means, pw, rpath, pixel1, pixel2):
+        '''Vergleich zweier Pixel mit Energie-Mittelwerten und Pitchwinkel.'''
+        plt.figure(figsize=(10,12))
+        gs = gridspec.GridSpec(2,1,height_ratios=[3,1])
+        ax = plt.subplot(gs[0])
+        ax_pw = ax.twinx()
+        ax_quot = plt.subplot(gs[1],sharex=ax)
+        ax_quot_pw = ax_quot.twinx()
+        for i in [pixel1, pixel2]:
+            ax.plot(pixel_means[0],pixel_means[i],marker='x',label=f'energy mean of pixel {i}')
+            ax_pw.plot(pixel_means[0],pw[i-1],marker="^",label=f'pitch angle of pixel {i}')
+        ax.set_ylabel('mean of energy [keV]')
+        ax_pw.set_ylabel('pitch angle [°]')
+
+        # Hier mal rumspielen, ob ich eventuell eine brauchbare Korrektur finden kann...
+        # pw1_ayuda = np.radians(np.array(pw[pixel2-1]))
+        # pw2_ayuda = np.radians(np.array(pw[pixel1-1]))
+        pw1_ayuda = np.array(pw[pixel2-1])
+        pw2_ayuda = np.array(pw[pixel1-1])
+
+        ax_quot.plot(pixel_means[0],pixel_means[pixel2]/pixel_means[pixel1],marker='x',label='quotient of energy means',c='tab:red')
+        ax_quot_pw.plot(pixel_means[0],pw1_ayuda/pw2_ayuda,marker='^',label='quotient of pitch angles',c='tab:green')
+        ax_quot.set_ylabel('quotient of energy means')
+        ax_quot_pw.set_ylabel('quotient of pitch angles')
+        ax_quot.set_xlabel('time')
+        ax_quot.tick_params(axis='x',labelrotation=45)
+        ax.set_title('Comparison of energy means and pitch angles')
+        ax.legend(loc='upper left')
+        ax_pw.legend(loc='upper right')
+        ax_quot.legend(loc='upper left')
+        ax_quot_pw.legend(loc='upper right')
+        plt.subplots_adjust(hspace=0.001)
+        plt.savefig(rpath)
         
         
-    def distribution_ring(self, filename, title, head, norm, period, grenzfunktion=None,below=True,box_list=None, norm_pixel=3, correction = False, save='gif/', res = '1min', overflow = True, esquare = False,window_width = 5, close=False, sorted_by_energy=False):
+        
+    def distribution_ring(self, filename, title, head, norm, period, grenzfunktion=None,below=True,box_list=None, norm_pixel=3, correction = False, save='gif/', res = '1min', overflow = True, esquare = False,window_width = 5, close=True, sorted_by_energy=False):
         '''Darstellung von means der einzelnen Pixel und Pitchwinkel als GIF. Es soll die ringförmige Verteilung deutlich werden. Code basiert auf minütlichen Daten!!!'''
         
         # Berechnung der Energie-Mittelwerte und Mittelung der Pitchwinkel über Intervalle der Länge window_width
         
-        # Maske, da ich nur die Magnetfelddaten innerhalb von period brauche:
-        mask = (self.mag.time >= period[0]) * (self.mag.time < period[1])
-        pw = [[] for i in range(15)]
+        # Zunächst alle Bilddateien aus gif/-Ordner löschen, um Probleme beim erstellen der Gifs zu vermeiden.
+        dir = "gif_images"
+        filelist = glob.glob(os.path.join(dir,"*"))
+        for f in filelist:
+            os.remove(f)
         
         
         # Berechnung der Energiemittelwerte
         # pixel_list kann bei Aufruf von distribution_ring nicht verändert werden, da ich eh alle Pixel brauche...
-        pixel_means = self.calc_energy_means(ebins=ebins,res=res,head=head,period=period,grenzfunktion=grenzfunktion,below=below,box_list=box_list,window_width=window_width,pixel_list=[i for i in range(0,16)],norm=norm,overflow=overflow,esquare=esquare)
-            
+        pixel_means = self.calc_energy_means(ebins=ebins,res=res,head=head,period=period,grenzfunktion=grenzfunktion,below=below,box_list=box_list,window_width=window_width,pixel_list=[i for i in range(1,16)],norm=norm,overflow=overflow,esquare=esquare)
+        
         # Berechnung der Pitchwinkel
-        i = 0
-        while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
-            
-            for k in [i for i in range(1,16)]:
-                # Mittelung der Pitchwinkel (k-1, da ich keine Zeit im array stehen habe)
-                pw_data = self.mag.pitchangles[k-1][mask]
-                new_pw = np.sum(pw_data[i*window_width:(i+1)*window_width])/window_width
-                pw[k-1].append(new_pw)
-            i +=1
+        pw = self.calc_pw(period=period,window_width=window_width)
             
         if sorted_by_energy:
             ind = np.argsort(pixel_means[norm_pixel])
@@ -580,7 +630,7 @@ class STEP():
                 vmax_pw = np.nanmax(pw[k-1])
             if np.nanmin(pw[k-1]) < vmin_pw:
                 vmin_pw = np.nanmin(pw[k-1])
-                    
+                                  
                     
         
         # Plotting
@@ -602,7 +652,11 @@ class STEP():
             fig, axes = plt.subplots(2,1,figsize=(10,12))
             
             ax = axes[0]
-            tmp = ax.pcolormesh(x_corners,y_corners,data_means,vmin=vmin,vmax=vmax)
+            
+            # Nehme betraglich größte Differenz für colorbar
+            v_ayuda = max(abs(vmax-1.0),abs(1.0-vmin))
+            
+            tmp = ax.pcolormesh(x_corners,y_corners,data_means,vmin=1.0-v_ayuda,vmax=1.0+v_ayuda,cmap=hmap)
             plt.colorbar(tmp,label=f'mean of energy/(mean of energy of pixel {norm_pixel})')
             ax.get_xaxis().set_visible(False)
             ax.get_yaxis().set_visible(False)

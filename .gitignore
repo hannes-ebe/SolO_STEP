@@ -1,5 +1,5 @@
 .git
 __pycache__
 python_win.bat
-gif_images*
+gif_images/
 data*

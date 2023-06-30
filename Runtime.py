@@ -175,7 +175,7 @@ plt.close('all')
 
 
 
-dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,norm='tmax',save='runtime_test2/',period=period,grenzfunktion=grenz,below=True)
+dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='runtime_test2/',period=period,grenzfunktion=grenz,below=True,close=True)
 
 
 
@@ -200,7 +200,7 @@ pw_mask = (dat.mag.time >= period[0]) * (dat.mag.time < period[1])
 
 # Muss Cosinus-Ausdrücke ansehen...
 
-ratio_pitch = np.cos(dat.mag.pitchangles[i][pw_mask])/np.cos(dat.mag.pitchangles[j][pw_mask])
+ratio_pitch = np.cos(np.radians(dat.mag.pitchangles[i][pw_mask]))/np.cos(np.radians(dat.mag.pitchangles[j][pw_mask]))
 
 # Bestimme die Laufzeit nur, wenn für das entsprchende datetime-Objekt für beide Pixel ein Wert voliegt.
 # Sehr unschöne brute-force-Methode... Bin noch nicht glücklich...

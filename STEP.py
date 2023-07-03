@@ -557,15 +557,15 @@ class STEP():
         ax_pw.set_ylabel('pitch angle [°]')
 
         # Hier mal rumspielen, ob ich eventuell eine brauchbare Korrektur finden kann...
-        # pw1_ayuda = np.radians(np.array(pw[pixel2-1]))
-        # pw2_ayuda = np.radians(np.array(pw[pixel1-1]))
-        pw1_ayuda = np.array(pw[pixel2-1])
-        pw2_ayuda = np.array(pw[pixel1-1])
+        pw1_ayuda = np.cos(np.radians(np.array(pw[pixel2-1])))
+        pw2_ayuda = np.cos(np.radians(np.array(pw[pixel1-1])))
+        # pw1_ayuda = np.array(pw[pixel2-1])
+        # pw2_ayuda = np.array(pw[pixel1-1])
 
         ax_quot.plot(pixel_means[0],pixel_means[pixel2]/pixel_means[pixel1],marker='x',label='quotient of energy means',c='tab:red')
-        ax_quot_pw.plot(pixel_means[0],pw1_ayuda/pw2_ayuda,marker='^',label='quotient of pitch angles',c='tab:green')
+        ax_quot_pw.plot(self.time,pw1_ayuda/pw2_ayuda,marker='^',label='quotient of cosine of pitch angles',c='tab:green')
         ax_quot.set_ylabel('quotient of energy means')
-        ax_quot_pw.set_ylabel('quotient of pitch angles')
+        ax_quot_pw.set_ylabel('quotient of cosine of pitch angles')
         ax_quot.set_xlabel('time')
         ax_quot.tick_params(axis='x',labelrotation=45)
         ax.set_title('Comparison of energy means and pitch angles')

@@ -387,9 +387,11 @@ class STEP():
         # Maske, da ich nur die Magnetfelddaten innerhalb von period brauche:
         mask = (self.mag.time > period[0]) * (self.mag.time <= period[1])
         pw = [[] for i in range(15)]
+        pw_time = []
         
         i = 0
         while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
+            pw_time.append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
             
             for k in [i for i in range(1,16)]:
                 # Mittelung der Pitchwinkel (k-1, da ich keine Zeit im array stehen habe)
@@ -397,7 +399,7 @@ class STEP():
                 new_pw = np.sum(pw_data[i*window_width:(i+1)*window_width])/window_width
                 pw[k-1].append(new_pw)
             i +=1
-        return pw
+        return pw, pw_time
 
     
     
@@ -542,8 +544,10 @@ class STEP():
         plt.legend()
         plt.savefig(rpath)
         
-    def pixel_comparison(self, pixel_means, pw, rpath, pixel1, pixel2):
-        '''Vergleich zweier Pixel mit Energie-Mittelwerten und Pitchwinkel.'''
+    def pixel_comparison(self, pixel_means, pw, pw_time, rpath, pixel1, pixel2):
+        '''Vergleich zweier Pixel mit Energie-Mittelwerten und Pitchwinkel.
+        Die Zeit der Energiemittelwerte steckt in pixel_means. Für die Pitchwinkel
+        wird sie extra übergeben.'''
         plt.figure(figsize=(10,12))
         gs = gridspec.GridSpec(2,1,height_ratios=[3,1])
         ax = plt.subplot(gs[0])
@@ -556,14 +560,22 @@ class STEP():
         ax.set_ylabel('mean of energy [keV]')
         ax_pw.set_ylabel('pitch angle [°]')
 
-        # Hier mal rumspielen, ob ich eventuell eine brauchbare Korrektur finden kann...
-        pw1_ayuda = np.cos(np.radians(np.array(pw[pixel2-1])))
-        pw2_ayuda = np.cos(np.radians(np.array(pw[pixel1-1])))
-        # pw1_ayuda = np.array(pw[pixel2-1])
-        # pw2_ayuda = np.array(pw[pixel1-1])
 
-        ax_quot.plot(pixel_means[0],pixel_means[pixel2]/pixel_means[pixel1],marker='x',label='quotient of energy means',c='tab:red')
-        ax_quot_pw.plot(self.time,pw1_ayuda/pw2_ayuda,marker='^',label='quotient of cosine of pitch angles',c='tab:green')
+        # Arrays für die Betrachtung der Quotienten
+        # Mal sehen, ob ich eine brauchbare Korrektur finden kann...
+        
+        pixel_means1_ayuda = np.sqrt(np.array(pixel_means[pixel1]))
+        pixel_means2_ayuda = np.sqrt(np.array(pixel_means[pixel2]))
+
+        pw1_ayuda = np.cos(np.radians(np.array(pw[pixel1-1])))
+        pw2_ayuda = np.cos(np.radians(np.array(pw[pixel2-1])))
+
+        ratio_means = pixel_means1_ayuda/pixel_means2_ayuda
+        ratio_pw = pw2_ayuda/pw1_ayuda
+
+
+        ax_quot.plot(pixel_means[0],ratio_means,marker='x',label='quotient of energy means',c='tab:red')
+        ax_quot_pw.plot(pw_time,ratio_pw,marker='^',label='quotient of cosine of pitch angles',c='tab:green')
         ax_quot.set_ylabel('quotient of energy means')
         ax_quot_pw.set_ylabel('quotient of cosine of pitch angles')
         ax_quot.set_xlabel('time')
@@ -575,7 +587,58 @@ class STEP():
         ax_quot_pw.legend(loc='upper right')
         plt.subplots_adjust(hspace=0.001)
         plt.savefig(rpath)
+        plt.close('all')
         
+        
+                
+    def energy_correction(self,energy,pw1_degree,pw2_degree):
+        '''Korrigiert die übergebene Energie über die übergebenen Pitchwinkel und die implementierte Korrektur.
+        energy entspricht der Energie des Pixels, der pw2 gesehen hat.'''
+        
+        pw1 = np.radians(pw1_degree)
+        pw2 = np.radians(pw2_degree)
+        corr = np.cos(pw2)*np.cos(pw2)/np.cos(pw1)/np.cos(pw1)
+        return corr*energy
+        
+        
+        
+    def pixel_comparison_corrected(self, pixel_means, pw, rpath, pixel1, pixel2):
+        '''Plot der originalen Energiemittelwerte sowie der Korrektur.'''
+        
+        plt.figure(figsize=(10,9))
+        gs = gridspec.GridSpec(2,1,height_ratios=[2,1])
+        
+        ax = plt.subplot(gs[0])
+        
+        ax.plot(pixel_means[0],pixel_means[pixel1],marker='x',label=f'energy mean of pixel {pixel1}')
+        ax.plot(pixel_means[0],pixel_means[pixel2],marker='x',label=f'energy mean of pixel {pixel2}')
+        
+        energy2_corrected = self.energy_correction(pixel_means[pixel2],pw[pixel1-1],pw[pixel2-1])
+        
+        ax.plot(pixel_means[0],energy2_corrected,marker='x',label=f'corrected energy mean of pixel {pixel2}')
+        
+        ax.set_ylabel('mean of energy [keV]')
+        ax.legend()
+        ax.set_title('Correction of energy means')
+        
+        # Plots der Differenzen
+        ax2 = plt.subplot(gs[1],sharex=ax)
+        
+        diff_original = pixel_means[pixel2] - pixel_means[pixel1]
+        diff_corrected = energy2_corrected - pixel_means[pixel1]
+        
+        ax2.plot(pixel_means[0],diff_original,marker='x',label='difference of energy means')
+        ax2.plot(pixel_means[0],diff_corrected,marker='x',label='difference of energy means with correction')
+        
+        ax2.set_ylabel('difference of energy means [keV]')
+        ax2.set_xlabel('time')
+        ax2.tick_params(axis='x',labelrotation=45)
+        ax2.legend()
+        
+        plt.subplots_adjust(hspace=0.001)
+        plt.savefig(rpath)
+        plt.close('all')
+
         
         
     def distribution_ring(self, filename, title, head, norm, period, grenzfunktion=None,below=True,box_list=None, norm_pixel=3, correction = False, save='gif/', res = '1min', overflow = True, esquare = False,window_width = 5, close=True, sorted_by_energy=False):
@@ -595,7 +658,8 @@ class STEP():
         pixel_means = self.calc_energy_means(ebins=ebins,res=res,head=head,period=period,grenzfunktion=grenzfunktion,below=below,box_list=box_list,window_width=window_width,pixel_list=[i for i in range(1,16)],norm=norm,overflow=overflow,esquare=esquare)
         
         # Berechnung der Pitchwinkel
-        pw = self.calc_pw(period=period,window_width=window_width)
+        pw, pw_time = self.calc_pw(period=period,window_width=window_width)
+
             
         if sorted_by_energy:
             ind = np.argsort(pixel_means[norm_pixel])

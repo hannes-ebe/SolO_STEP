@@ -32,25 +32,45 @@ def grenz(t):
 pixel_means5 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz)
 # pixel_means1 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, window_width=1)
 
-pw5 = dat.calc_pw(period, window_width=5)
-# pw1 = dat.calc_pw(period, window_width=1)
+pw5, pw5_time = dat.calc_pw(period, window_width=5)
+# pw1 pw1_time = dat.calc_pw(period, window_width=1)
+
+
+
+### Plot der Zeitreihe als STEP-Plot ###
+
+dat.plot_ts(period=period, head=-1, save='plausibility_pw/', norm='tmax',grenzfunktion=grenz)
+
+
+
+### Plot der Verteilung von Energiemittelwert und Pitchwinkel ###
+
+dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/',period=period,grenzfunktion=grenz,below=True,close=True)
+
 
 
 ### Plots für Pixel mit ähnlichen Pitchwinkeln: ###
 
-dat.pixel_comparison(pixel_means5, pw5, 'plausibility_pw/comparison_5_minutes_pixel_1_5.png', 1, 5)
-dat.pixel_comparison(pixel_means5, pw5, 'plausibility_pw/comparison_5_minutes_pixel_2_4.png', 2, 4)
-dat.pixel_comparison(pixel_means5, pw5, 'plausibility_pw/comparison_5_minutes_pixel_6_10.png', 6, 10)
-dat.pixel_comparison(pixel_means5, pw5, 'plausibility_pw/comparison_5_minutes_pixel_7_9.png', 7, 9)
-dat.pixel_comparison(pixel_means5, pw5, 'plausibility_pw/comparison_5_minutes_pixel_11_15.png', 11, 15)
-dat.pixel_comparison(pixel_means5, pw5, 'plausibility_pw/comparison_5_minutes_pixel_12_14.png', 12, 14)
+dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_1_5.png', 1, 5)
+dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_2_4.png', 2, 4)
+dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_6_10.png', 6, 10)
+dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_7_9.png', 7, 9)
+dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_11_15.png', 11, 15)
+dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_12_14.png', 12, 14)
+
+dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_1_5.png', 1, 5)
+dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_2_4.png', 2, 4)
+dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_6_10.png', 6, 10)
+dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_7_9.png', 7, 9)
+dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_11_15.png', 11, 15)
+dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_12_14.png', 12, 14)
     
-# dat.pixel_comparison(pixel_means1, pw1, 'plausibility_pw/comparison_1_minutes_pixel_1_5.png', 1, 5)
-# dat.pixel_comparison(pixel_means1, pw1, 'plausibility_pw/comparison_1_minutes_pixel_2_4.png', 2, 4)
-# dat.pixel_comparison(pixel_means1, pw1, 'plausibility_pw/comparison_1_minutes_pixel_6_10.png', 6, 10)
-# dat.pixel_comparison(pixel_means1, pw1, 'plausibility_pw/comparison_1_minutes_pixel_7_9.png', 7, 9)
-# dat.pixel_comparison(pixel_means1, pw1, 'plausibility_pw/comparison_1_minutes_pixel_11_15.png', 11, 15)
-# dat.pixel_comparison(pixel_means1, pw1, 'plausibility_pw/comparison_1_minutes_pixel_12_14.png', 12, 14)
+# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_1_5.png', 1, 5)
+# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_2_4.png', 2, 4)
+# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_6_10.png', 6, 10)
+# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_7_9.png', 7, 9)
+# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_11_15.png', 11, 15)
+# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_12_14.png', 12, 14)
 
 
 plt.close("all")

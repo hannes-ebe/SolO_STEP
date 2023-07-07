@@ -591,14 +591,18 @@ class STEP():
         
         
                 
-    def energy_correction(self,energy,pw1_degree,pw2_degree):
+    def energy_correction(self,energy,pw1_degree,pw2_degree,pw1_degree_err,pw2_degree_err):
         '''Korrigiert die übergebene Energie über die übergebenen Pitchwinkel und die implementierte Korrektur.
+        Der Fehler wird entsprechend der Fehlerfortpflanzung berechnet.
         energy entspricht der Energie des Pixels, der pw2 gesehen hat.'''
         
         pw1 = np.radians(pw1_degree)
         pw2 = np.radians(pw2_degree)
-        corr = np.cos(pw2)*np.cos(pw2)/np.cos(pw1)/np.cos(pw1)
-        return corr*energy
+        pw1_err = np.radians(pw1_degree_err)
+        pw2_err = np.radians(pw2_degree_err)
+        corr = np.cos(pw2)*np.cos(pw2)/np.cos(pw1)/np.cos(pw1)   # Korrekturfaktor
+        err = 2.0*energy*np.cos(pw2)/np.cos(pw1)/np.cos(pw1) * (np.sin(pw1)*np.cos(pw2)/np.cos(pw1)*pw1_err + np.sin(pw2)*pw2_err) # Fehler der korrigierten Energie
+        return corr*energy, err
         
         
         
@@ -613,7 +617,7 @@ class STEP():
         ax.plot(pixel_means[0],pixel_means[pixel1],marker='x',label=f'energy mean of pixel {pixel1}')
         ax.plot(pixel_means[0],pixel_means[pixel2],marker='x',label=f'energy mean of pixel {pixel2}')
         
-        energy2_corrected = self.energy_correction(pixel_means[pixel2],pw[pixel1-1],pw[pixel2-1])
+        energy2_corrected = self.energy_correction(pixel_means[pixel2],pw[pixel1-1],pw[pixel2-1])[0]
         
         ax.plot(pixel_means[0],energy2_corrected,marker='x',label=f'corrected energy mean of pixel {pixel2}')
         

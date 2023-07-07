@@ -5,9 +5,11 @@
 #################################################################################################
 
 from STEP import STEP
+from mag import MAGdata
 import datetime as dt
 import numpy as np
 import matplotlib.pyplot as plt
+from cdflib import CDF
 
 
 ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
@@ -21,56 +23,97 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
        372.736])
 
 
-dat = STEP(2021, 12, 4, magnet_default_path=True)
-# STEP(2021, 12, 4, rpath='data/STEP/')
+# dat = STEP(2021, 12, 4, magnet_default_path=True)
+# # STEP(2021, 12, 4, rpath='data/STEP/')
 
 period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
 
 def grenz(t):
     return -0.5*t + 20
 
-pixel_means5 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz)
-# pixel_means1 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, window_width=1)
+# pixel_means5 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz)
+# # pixel_means1 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, window_width=1)
 
-pw5, pw5_time = dat.calc_pw(period, window_width=5)
-# pw1 pw1_time = dat.calc_pw(period, window_width=1)
-
-
-
-### Plot der Zeitreihe als STEP-Plot ###
-
-dat.plot_ts(period=period, head=-1, save='plausibility_pw/', norm='tmax',grenzfunktion=grenz)
+# pw5, pw5_time = dat.calc_pw(period, window_width=5)
+# # pw1 pw1_time = dat.calc_pw(period, window_width=1)
 
 
 
-### Plot der Verteilung von Energiemittelwert und Pitchwinkel ###
+# ### Plot der Zeitreihe als STEP-Plot ###
 
-dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/',period=period,grenzfunktion=grenz,below=True,close=True)
+# dat.plot_ts(period=period, head=-1, save='plausibility_pw/', norm='tmax',grenzfunktion=grenz)
 
 
 
-### Plots für Pixel mit ähnlichen Pitchwinkeln: ###
+# ### Plot der Verteilung von Energiemittelwert und Pitchwinkel ###
 
-dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_1_5.png', 1, 5)
-dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_2_4.png', 2, 4)
-dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_6_10.png', 6, 10)
-dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_7_9.png', 7, 9)
-dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_11_15.png', 11, 15)
-dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_12_14.png', 12, 14)
+# dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/',period=period,grenzfunktion=grenz,below=True,close=True)
 
-dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_1_5.png', 1, 5)
-dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_2_4.png', 2, 4)
-dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_6_10.png', 6, 10)
-dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_7_9.png', 7, 9)
-dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_11_15.png', 11, 15)
-dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_12_14.png', 12, 14)
+
+
+# ### Plots für Pixel mit ähnlichen Pitchwinkeln: ###
+
+# dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_1_5.png', 1, 5)
+# dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_2_4.png', 2, 4)
+# dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_6_10.png', 6, 10)
+# dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_7_9.png', 7, 9)
+# dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_11_15.png', 11, 15)
+# dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/comparison_5_minutes_pixel_12_14.png', 12, 14)
+
+# dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_1_5.png', 1, 5)
+# dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_2_4.png', 2, 4)
+# dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_6_10.png', 6, 10)
+# dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_7_9.png', 7, 9)
+# dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_11_15.png', 11, 15)
+# dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/comparison_corrected_5_minutes_pixel_12_14.png', 12, 14)
     
-# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_1_5.png', 1, 5)
-# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_2_4.png', 2, 4)
-# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_6_10.png', 6, 10)
-# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_7_9.png', 7, 9)
-# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_11_15.png', 11, 15)
-# dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_12_14.png', 12, 14)
+# # dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_1_5.png', 1, 5)
+# # dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_2_4.png', 2, 4)
+# # dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_6_10.png', 6, 10)
+# # dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_7_9.png', 7, 9)
+# # dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_11_15.png', 11, 15)
+# # dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_12_14.png', 12, 14)
 
 
-plt.close("all")
+# plt.close("all")
+
+
+### Calculating errors in pw necessary to do proper correction. ###
+
+# Assuming that both pw have same error
+# 4th data point of pixel 12 and 14
+
+energy = 19.5
+energy_corrected_err = 4
+pw_err = np.radians(10)
+pw1 = np.radians(46.15)
+pw2 = np.radians(46.05)
+factor = 2.0*energy*np.cos(pw2)/np.cos(pw1)/np.cos(pw1) * (np.sin(pw1)*np.cos(pw2)/np.cos(pw1) + np.sin(pw2))
+pw_err = energy_corrected_err/factor
+print(pw_err)
+print(np.degrees(pw_err))
+
+
+# Errors of pitchangles
+
+dat = MAGdata(period=period)
+
+print(dat.pitchangles_err)
+
+dat.pw_ts(err=True)
+
+
+
+
+
+
+### Checking out the cdf-files of SolO mag data ###
+
+# dat = CDF('/data/projects/solo/mag/l2_soar/rtn_1minute/2021/solo_L2_mag-rtn-normal-1-minute_20211204_V01.cdf')
+# mag = dat.varget('B_RTN')
+# lbl = dat.varget('LBL1_B_RTN')
+# rep = dat.varget('REP1_B_RTN')
+# print(mag)
+# print(lbl)
+# print(rep)
+# print(dat.cdf_info())

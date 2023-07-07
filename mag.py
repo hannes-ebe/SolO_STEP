@@ -27,12 +27,14 @@ class MAGdata(object):
         self.B_N = np.zeros((0))
         self.time = []
         self.pitchangles = []
+        self.pitchangles_err = []
         # Blickrichtung der einzelnen Pixel (Phi, Theta):
         self.fov = np.array([[-25,24],[-25,12],[-25,0],[-25,-12],[-25,-24],[-35,24],[-35,12],[-35,0],[-35,-12],[-35,-24],[-45,24],[-45,12],[-45,0],[-45,-12],[-45,-24]])
         
         self._load()
         self._calc_angles()
         self._calc_pw()
+        # self._calc_pw_err()
         
     def _load(self):
         d = self.period[0]
@@ -114,6 +116,29 @@ class MAGdata(object):
         self.pitchangles = np.array(self.pitchangles)
         
         
+    def pw_err(self,v_phi,v_theta):
+        ''' Implementierung der Fehler der Pitchwinkel. Nehme erstmal an, dass der Fehler des absoluten Feldes von 0.2 nT
+        nur in in B_N-Richtung auftritt. Die Magnetfelder sind in nT gegeben.'''
+        B_N_err = 0.2
+        B_theta_err = 1/(1+self.B_N*self.B_N/(self.B_T*self.B_T+self.B_R*self.B_R)) * 1/np.sqrt(self.B_T*self.B_T+self.B_R*self.B_R) * B_N_err
+        v_theta = np.radians(v_theta)
+        v_phi = np.radians(v_phi)
+        B_theta = np.radians(self.theta)
+        B_phi = np.radians(self.phi)
+        
+        pw_err = np.abs((np.sin(B_phi)*np.sin(v_phi)+np.cos(B_phi)*np.cos(v_phi))*np.cos(v_theta)*np.sin(B_theta)-np.sin(v_theta)*np.cos(B_theta)/np.sqrt(1-(np.sin(v_theta)*np.sin(B_theta)+np.sin(B_phi)*np.sin(v_phi)*np.cos(v_theta)*np.cos(B_theta)+np.cos(B_phi)*np.cos(v_phi)*np.cos(v_theta)*np.cos(B_theta))**2))*B_theta_err
+        return pw_err
+        
+        
+    def _calc_pw_err(self):
+        '''Berechne die Fehler der Pitchwinkel mittels der Implementierung unter pw_err.''' 
+        for i in range(15):
+            v_phi = self.fov[i][0]
+            v_theta = self.fov[i][1]
+            self.pitchangles_err.append(self.pw_err(v_phi,v_theta))
+        self.pitchangles_err = np.array(self.pitchangles_err)
+        
+        
         
     def step_plot(self,xlabel,ylabel,title):
         '''Erzeugt den bekannten STEP-Plot mit allen 16 Pixeln. Gibt Liste mit axes zurück.'''
@@ -141,12 +166,17 @@ class MAGdata(object):
         ax[0].set_title(title)
         return fig, ax
     
-    def pw_ts(self):
+    
+    def pw_ts(self,err=False):
+        '''Bei err == True werden Fehler mit dargestellt.'''
 
         fig, ax = self.step_plot(r'time', r'$\varphi$ [°]', 'Time series of pitch angle from ' + str(self.period[0]) + ' to ' + str(self.period[1]))
 
         for i in range(1,16):
-            ax[i].scatter(self.time,self.pitchangles[i-1],marker='x')
+            if err == True:
+                ax[i].errorbar(self.time,self.pitchangles[i-1],yerr=self.pitchangles_err[-1],marker='x')
+            else:
+                ax[i].scatter(self.time,self.pitchangles[i-1],marker='x')
             ax[i].tick_params(axis='x', labelrotation=90)
         
         plt.show()

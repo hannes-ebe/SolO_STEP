@@ -52,7 +52,7 @@ pw5, pw5_time = dat.calc_pw(period, window_width=5)
 ### Plot der Zeitreihe als STEP-Plot ###
 
 # dat.plot_ts(period=period, head=-1, save='plausibility_pw/2021_12_04/', norm='tmax',grenzfunktion=grenz)
-dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_11_12', norm='tmax',grenzfunktion=grenz)
+dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_11_12/', norm='tmax',grenzfunktion=grenz)
 
 
 

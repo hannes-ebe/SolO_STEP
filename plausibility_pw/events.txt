@@ -1,0 +1,36 @@
+Events examined to find asymmetry in data
+
+
+
+### 2021-12-4 ###
+
+dat = STEP(2021, 12, 4, magnet_default_path=True)
+# STEP(2021, 12, 4, rpath='data/STEP/')
+period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
+def grenz(t):
+     return -0.5*t + 20
+     
+
+### 2022-2-7 ###
+### Achtung!!! 'ptmax' als Normierung genommen! ###
+
+dat = STEP(2022,2,7, magnet_default_path=True)
+period=[dt.datetime(2022,2,7,20,15),dt.datetime(2022,2,7,21,15)]
+grenz = None
+
+     
+### 2022-11-12 ###
+
+dat = STEP(2022,11,12, magnet_default_path=True)
+period = [dt.datetime(2022,11,12,2,30),dt.datetime(2022,11,12,4)]
+grenz = None
+
+
+### 2022-11-19 ###
+### Achtung!!! 'ptmax' als Normierung genommen! ###
+
+dat = STEP(2022,11,19, magnet_default_path=True)
+period = [dt.datetime(2022,11,19,13,30),dt.datetime(2022,11,19,16,30)]
+grenz = None
+
+

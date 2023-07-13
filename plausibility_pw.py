@@ -31,35 +31,59 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
 #     return -0.5*t + 20
 
 
-### 2022-12-4 ###
-dat = STEP(2022,11,12, magnet_default_path=True)
-period = [dt.datetime(2022,11,12,2),dt.datetime(2022,11,12,4)]
-def grenz(t):
-    return -0.5*t + 20
+### 2022-2-7 ###
+
+# dat = STEP(2022,2,7, magnet_default_path=True)
+# period=[dt.datetime(2022,2,7,20,15),dt.datetime(2022,2,7,21,15)]
+# grenz = None
+
+
+### 2022-11-12 ###
+
+# dat = STEP(2022,11,12, magnet_default_path=True)
+# period = [dt.datetime(2022,11,12,2,30),dt.datetime(2022,11,12,4)]
+# grenz = None
+
+
+### 2022-11-19 ###
+
+dat = STEP(2022,11,19, magnet_default_path=True)
+period = [dt.datetime(2022,11,19,13,30),dt.datetime(2022,11,19,16,30)]
+grenz = None
 
 
 
 
 
-pixel_means5 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz)
+# pixel_means5 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz)
 # pixel_means1 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, window_width=1)
+
+### Achtung hier mal andere Normierung!!! ###
+pixel_means5 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, norm='ptmax')
 
 pw5, pw5_time = dat.calc_pw(period, window_width=5)
 # pw1 pw1_time = dat.calc_pw(period, window_width=1)
 
 
 
+
+
 ### Plot der Zeitreihe als STEP-Plot ###
 
 # dat.plot_ts(period=period, head=-1, save='plausibility_pw/2021_12_04/', norm='tmax',grenzfunktion=grenz)
-dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_11_12/', norm='tmax',grenzfunktion=grenz)
+# dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_02_07/', norm='ptmax',grenzfunktion=grenz)
+# dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_11_12/', norm='tmax',grenzfunktion=grenz)
+dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_11_19/', norm='ptmax',grenzfunktion=grenz)
 
 
 
 ### Plot der Verteilung von Energiemittelwert und Pitchwinkel ###
 
 # dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/2021_12_04/',period=period,grenzfunktion=grenz,below=True,close=True)
-dat.distribution_ring('time_series_energy_means_pw_2022_11_12','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/2022_11_12/',period=period,grenzfunktion=grenz,below=True,close=True)
+# dat.distribution_ring('time_series_energy_means_pw_2022_02_07','mean of energy (time series)',head=-1,window_width=1,norm='ptmax',save='plausibility_pw/2022_02_07/',period=period,grenzfunktion=grenz,below=True,close=True)
+# dat.distribution_ring('time_series_energy_means_pw_2022_11_12','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/2022_11_12/',period=period,grenzfunktion=grenz,below=True,close=True)
+dat.distribution_ring('time_series_energy_means_pw_2022_11_19','mean of energy (time series)',head=-1,window_width=1,norm='ptmax',save='plausibility_pw/2022_11_19/',period=period,grenzfunktion=grenz,below=True,close=True)
+
 
 
 ### Plots für Pixel mit ähnlichen Pitchwinkeln: ###
@@ -81,7 +105,10 @@ def compare_opposing_pixels(dir):
     
 
 # compare_opposing_pixels('2021_12_04')
-compare_opposing_pixels('2022_11_12')
+# compare_opposing_pixels('2022_02_07')
+# compare_opposing_pixels('2022_11_12')
+compare_opposing_pixels('2022_11_19')
+
 
 
 # dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_1_5.png', 1, 5)

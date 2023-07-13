@@ -617,7 +617,8 @@ class STEP():
         ax.plot(pixel_means[0],pixel_means[pixel1],marker='x',label=f'energy mean of pixel {pixel1}')
         ax.plot(pixel_means[0],pixel_means[pixel2],marker='x',label=f'energy mean of pixel {pixel2}')
         
-        energy2_corrected = self.energy_correction(pixel_means[pixel2],pw[pixel1-1],pw[pixel2-1])[0]
+        # Übergebe willkürliche Fehler, da ich diese eh nicht brauche.
+        energy2_corrected = self.energy_correction(pixel_means[pixel2],pw[pixel1-1],pw[pixel2-1],2,2)[0]
         
         ax.plot(pixel_means[0],energy2_corrected,marker='x',label=f'corrected energy mean of pixel {pixel2}')
         

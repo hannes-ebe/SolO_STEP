@@ -52,14 +52,14 @@ pw5, pw5_time = dat.calc_pw(period, window_width=5)
 ### Plot der Zeitreihe als STEP-Plot ###
 
 # dat.plot_ts(period=period, head=-1, save='plausibility_pw/2021_12_04/', norm='tmax',grenzfunktion=grenz)
-dat.plot_ts(period=period, head=-1, save='plausibility_pw/', norm='tmax',grenzfunktion=grenz)
+dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_11_12', norm='tmax',grenzfunktion=grenz)
 
 
 
 ### Plot der Verteilung von Energiemittelwert und Pitchwinkel ###
 
 # dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/2021_12_04/',period=period,grenzfunktion=grenz,below=True,close=True)
-dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/2022_11_12/',period=period,grenzfunktion=grenz,below=True,close=True)
+dat.distribution_ring('time_series_energy_means_pw_2022_11_12','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/2022_11_12/',period=period,grenzfunktion=grenz,below=True,close=True)
 
 
 ### Plots für Pixel mit ähnlichen Pitchwinkeln: ###

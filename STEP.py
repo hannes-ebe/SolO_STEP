@@ -536,7 +536,7 @@ class STEP():
         '''Plottet die übergebenen Mittelwerte für alle Pixel.'''
         fig, ax = plt.subplots(figsize=(10,6))
         for i in pixel_list:
-            ax.scatter(pixel_means[0],pixel_means[i],marker='x',label=f'pixel {i}')
+            ax.plot(pixel_means[0],pixel_means[i],marker='x',label=f'pixel {i}')
         ax.set_ylabel('mean of energy [keV]')
         ax.set_xlabel('time')
         ax.tick_params(axis='x',labelrotation=45)

@@ -137,6 +137,25 @@ class MAGdata(object):
             v_theta = self.fov[i][1]
             self.pitchangles_err.append(self.pw_err(v_phi,v_theta))
         self.pitchangles_err = np.array(self.pitchangles_err)
+
+    def average_pw(self,period,window_width=5):
+        '''Berechnung der gemittelten Pitchwinkel'''
+        # Maske, da ich nur die Magnetfelddaten innerhalb von period brauche:
+        mask = (self.time > period[0]) * (self.time <= period[1])
+        pw = [[] for i in range(15)]
+        pw_time = []
+        
+        i = 0
+        while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
+            pw_time.append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
+            
+            for k in [i for i in range(1,16)]:
+                # Mittelung der Pitchwinkel (k-1, da ich keine Zeit im array stehen habe)
+                pw_data = self.pitchangles[k-1][mask]
+                new_pw = np.sum(pw_data[i*window_width:(i+1)*window_width])/window_width
+                pw[k-1].append(new_pw)
+            i +=1
+        return pw, pw_time
         
         
         
@@ -167,7 +186,7 @@ class MAGdata(object):
         return fig, ax
     
     
-    def pw_ts(self,err=False):
+    def pw_ts_step_plot(self,err=False):
         '''Bei err == True werden Fehler mit dargestellt.'''
 
         fig, ax = self.step_plot(r'time', r'$\varphi$ [°]', 'Time series of pitch angle from ' + str(self.period[0]) + ' to ' + str(self.period[1]))
@@ -181,3 +200,46 @@ class MAGdata(object):
         
         plt.show()
         
+    def pw_ts(self,rpath,pixel_list,period=None,window_width=None):
+        '''Plottet die Piitchwinkel für alle angegebenen Pixel.'''
+        fig, ax = plt.subplots(figsize=(10,6))
+
+        if period != None and window_width == None:
+            mask = (self.time >= period[0]) * (self.time < period[1])
+            for i in pixel_list:
+                ax.plot(self.time[mask],self.pitchangles[i-1][mask],marker='x',label=f'pixel {i}')
+        elif period != None and window_width != None:
+            pw, pw_time =self.average_pw(period=period,window_width=window_width)
+            for i in pixel_list:
+                ax.plot(pw_time,pw[i-1],marker='x',label=f'pixel {i}')
+        else:
+            for i in pixel_list:
+                ax.plot(self.time,self.pitchangles[i-1],marker='x',label=f'pixel {i}')
+
+        ax.set_ylabel('pitch angle [°]')
+        ax.set_xlabel('time')
+        ax.tick_params(axis='x',labelrotation=45)
+        plt.title('pitch angle')
+        plt.legend()
+        plt.savefig(rpath)
+
+    def mag_ts(self,rpath,period=None):
+        '''Plottet das Magnetfeld'''
+        fig, ax = plt.subplots(figsize=(10,6))
+
+        if period != None:
+            mask = (self.time >= period[0]) * (self.time < period[1])
+            ax.plot(self.time[mask],self.B_R[mask],marker='x',label=r'$B_\mathrm{R}$')
+            ax.plot(self.time[mask],self.B_T[mask],marker='x',label=r'$B_\mathrm{T}$')
+            ax.plot(self.time[mask],self.B_N[mask],marker='x',label=r'$B_\mathrm{N}$')
+        else:
+            ax.plot(self.time,self.B_R,marker='x',label=r'$B_\mathrm{R}$')
+            ax.plot(self.time,self.B_T,marker='x',label=r'$B_\mathrm{T}$')
+            ax.plot(self.time,self.B_N,marker='x',label=r'$B_\mathrm{N}$')
+
+        ax.set_ylabel('magnetic field component [nT]')
+        ax.set_xlabel('time')
+        ax.tick_params(axis='x',labelrotation=45)
+        plt.title(f'magnetic field in RTN-coordinates')
+        plt.legend()
+        plt.savefig(rpath)

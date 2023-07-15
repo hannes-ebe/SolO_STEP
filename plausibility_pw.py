@@ -111,6 +111,7 @@ compare_opposing_pixels('2022_11_19')
 
 
 
+
 # dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_1_5.png', 1, 5)
 # dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_2_4.png', 2, 4)
 # dat.pixel_comparison(pixel_means1, pw1, pw1_time, 'plausibility_pw/comparison_1_minutes_pixel_6_10.png', 6, 10)

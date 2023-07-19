@@ -1,21 +1,24 @@
-''' Testing and working with STEP data'''
+###################################################################################################
+### Testing and checking of MAG data and pitch angle calculation in space craft reference frame ###
+###################################################################################################
 
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime as dt
 import load_nom_II as ld
 import plot_nom_II as pt
+from cdflib import CDF
+from mag import MAGdata
 
-# Loading data
-time, data = ld.load_nom(period=(dt.datetime(2022,2,27),dt.datetime(2022,2,28)), products=('M','A'))
-print('Data loaded successfully.')
 
-# Combining data (Main and Auxiliary Product)
-ld.combine_data(time, data)
-print('Data combined successfully.')
+period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
 
-# Plotting data (Aufruf zum Speichern in Plotfunktion)
-pt.plot_ts(data, time, head=0, save='plots/')
-pt.plot_ts(data, time, head=1, save='plots/')
-pt.plot_ts_diff(data,time, save='plots/', single=False)
-print('Data plotted successfully.')
+dat = CDF(path='data/mag/2021/srf/solo_L2_mag-srf-normal_20211204_V01.cdf')
+mag = dat.varget('B_SRF')
+# lbl = dat.varget('LBL1_B_RTN')
+# rep = dat.varget('REP1_B_RTN')
+print(mag)
+# print(lbl)
+# print(rep)
+print(dat.cdf_info())
+

@@ -24,11 +24,11 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
 
 ### 2021-12-4 ###
 
-# dat = STEP(2021, 12, 4, magnet_default_path=True)
-# # STEP(2021, 12, 4, rpath='data/STEP/')
-# period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
-# def grenz(t):
-#     return -0.5*t + 20
+# dat = STEP(2021, 12, 4, mag_path = 'default')
+dat = STEP(2021, 12, 4, rpath='data/STEP/', mag_path='data/mag/srf', mag_frame = 'srf')
+period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
+def grenz(t):
+    return -0.5*t + 20
 
 
 ### 2022-2-7 ###
@@ -47,9 +47,9 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
 
 ### 2022-11-19 ###
 
-dat = STEP(2022,11,19, magnet_default_path=True)
-period = [dt.datetime(2022,11,19,13,30),dt.datetime(2022,11,19,16,30)]
-grenz = None
+# dat = STEP(2022,11,19, magnet_default_path=True)
+# period = [dt.datetime(2022,11,19,13,30),dt.datetime(2022,11,19,16,30)]
+# grenz = None
 
 
 
@@ -70,19 +70,19 @@ pw5, pw5_time = dat.calc_pw(period, window_width=5)
 
 ### Plot der Zeitreihe als STEP-Plot ###
 
-# dat.plot_ts(period=period, head=-1, save='plausibility_pw/2021_12_04/', norm='tmax',grenzfunktion=grenz)
+dat.plot_ts(period=period, head=-1, save='plausibility_pw/2021_12_04/', norm='tmax',grenzfunktion=grenz)
 # dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_02_07/', norm='ptmax',grenzfunktion=grenz)
 # dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_11_12/', norm='tmax',grenzfunktion=grenz)
-dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_11_19/', norm='ptmax',grenzfunktion=grenz)
+# dat.plot_ts(period=period, head=-1, save='plausibility_pw/2022_11_19/', norm='ptmax',grenzfunktion=grenz)
 
 
 
 ### Plot der Verteilung von Energiemittelwert und Pitchwinkel ###
 
-# dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/2021_12_04/',period=period,grenzfunktion=grenz,below=True,close=True)
+dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/2021_12_04/',period=period,grenzfunktion=grenz,below=True,close=True)
 # dat.distribution_ring('time_series_energy_means_pw_2022_02_07','mean of energy (time series)',head=-1,window_width=1,norm='ptmax',save='plausibility_pw/2022_02_07/',period=period,grenzfunktion=grenz,below=True,close=True)
 # dat.distribution_ring('time_series_energy_means_pw_2022_11_12','mean of energy (time series)',head=-1,window_width=1,norm='tmax',save='plausibility_pw/2022_11_12/',period=period,grenzfunktion=grenz,below=True,close=True)
-dat.distribution_ring('time_series_energy_means_pw_2022_11_19','mean of energy (time series)',head=-1,window_width=1,norm='ptmax',save='plausibility_pw/2022_11_19/',period=period,grenzfunktion=grenz,below=True,close=True)
+# dat.distribution_ring('time_series_energy_means_pw_2022_11_19','mean of energy (time series)',head=-1,window_width=1,norm='ptmax',save='plausibility_pw/2022_11_19/',period=period,grenzfunktion=grenz,below=True,close=True)
 
 
 
@@ -104,10 +104,10 @@ def compare_opposing_pixels(dir):
     dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_12_14.png', 12, 14)
     
 
-# compare_opposing_pixels('2021_12_04')
+compare_opposing_pixels('2021_12_04')
 # compare_opposing_pixels('2022_02_07')
 # compare_opposing_pixels('2022_11_12')
-compare_opposing_pixels('2022_11_19')
+# compare_opposing_pixels('2022_11_19')
 
 
 

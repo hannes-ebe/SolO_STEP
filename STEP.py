@@ -30,7 +30,7 @@ hmap = mpl.cm.seismic
 
 
 class STEP():
-    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',rpath_mag = None,magnet_default_path=False,lastofmonth=False):
+    def __init__(self,year,month,day,rpath = '/data/projects/solo/step_v0008/',mag_path = None, mag_frame = None,lastofmonth=False):
         '''Magnetfeld wird gleich mitgeladen, wenn rpath_mag übergeben wird. Wird magnet_default_path auf True gesetzt wird automatisch der 
         korrekte Dateipfad für die Uni-Rechner genutzt.'''
         self.ebins = ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
@@ -58,18 +58,14 @@ class STEP():
         print('STEP-Data combined successfully.')
         
         # Loading MAG-Data
-        if magnet_default_path == True:
-            self.magnet_default_path = '/data/projects/solo/mag/l2_soar/rtn_1minute'
-            rpath_mag = self.magnet_default_path
-
-        if type(rpath_mag) == str:
+        if type(mag_path) == str:
             if lastofmonth:
                 if month!=12:
-                    self.mag = mag.MAGdata(path = rpath_mag, period = (dt.datetime(year,month,day),dt.datetime(year,month+1,1)))
+                    self.mag = mag.MAGdata(mag_path = mag_path, frame = mag_frame, period = (dt.datetime(year,month,day),dt.datetime(year,month+1,1)))
                 else:
-                    self.mag = mag.MAGdata(path = rpath_mag, period = (dt.datetime(year,month,day),dt.datetime(year+1,1,1)))
+                    self.mag = mag.MAGdata(mag_path = mag_path, frame = mag_frame, period = (dt.datetime(year,month,day),dt.datetime(year+1,1,1)))
             else:
-                self.mag = mag.MAGdata(path = rpath_mag, period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)))
+                self.mag = mag.MAGdata(mag_path = mag_path, frame = mag_frame, period=(dt.datetime(year,month,day),dt.datetime(year,month,day+1)))
 
     def cut_data(self,t0,t1):
         cdat = {}
@@ -556,7 +552,7 @@ class STEP():
         ax_quot_pw = ax_quot.twinx()
         for i in [pixel1, pixel2]:
             ax.plot(pixel_means[0],pixel_means[i],marker='x',label=f'energy mean of pixel {i}')
-            ax_pw.plot(pixel_means[0],pw[i-1],marker="^",label=f'pitch angle of pixel {i}')
+            ax_pw.plot(pixel_means[0],np.degrees(pw[i-1]),marker="^",label=f'pitch angle of pixel {i}')
         ax.set_ylabel('mean of energy [keV]')
         ax_pw.set_ylabel('pitch angle [°]')
 
@@ -567,17 +563,17 @@ class STEP():
         pixel_means1_ayuda = np.sqrt(np.array(pixel_means[pixel1]))
         pixel_means2_ayuda = np.sqrt(np.array(pixel_means[pixel2]))
 
-        pw1_ayuda = np.cos(np.radians(np.array(pw[pixel1-1])))
-        pw2_ayuda = np.cos(np.radians(np.array(pw[pixel2-1])))
+        pw1_ayuda = np.cos(np.array(pw[pixel1-1]))
+        pw2_ayuda = np.cos(np.array(pw[pixel2-1]))
 
         ratio_means = pixel_means1_ayuda/pixel_means2_ayuda
         ratio_pw = pw2_ayuda/pw1_ayuda
 
 
         ax_quot.plot(pixel_means[0],ratio_means,marker='x',label='quotient of energy means',c='tab:red')
-        ax_quot_pw.plot(pw_time,ratio_pw,marker='^',label='quotient of cosine of pitch angles',c='tab:green')
+        ax_quot_pw.plot(pw_time,ratio_pw,marker='^',label='quotient of square of cosine of pitch angles',c='tab:green')
         ax_quot.set_ylabel('quotient of energy means')
-        ax_quot_pw.set_ylabel('quotient of cosine of pitch angles')
+        ax_quot_pw.set_ylabel('quotient of square of cosine of pitch angles')
         ax_quot.set_xlabel('time')
         ax_quot.tick_params(axis='x',labelrotation=45)
         ax.set_title('Comparison of energy means and pitch angles')
@@ -591,15 +587,11 @@ class STEP():
         
         
                 
-    def energy_correction(self,energy,pw1_degree,pw2_degree,pw1_degree_err,pw2_degree_err):
+    def energy_correction(self,energy,pw1,pw2,pw1_err,pw2_err):
         '''Korrigiert die übergebene Energie über die übergebenen Pitchwinkel und die implementierte Korrektur.
         Der Fehler wird entsprechend der Fehlerfortpflanzung berechnet.
         energy entspricht der Energie des Pixels, der pw2 gesehen hat.'''
         
-        pw1 = np.radians(pw1_degree)
-        pw2 = np.radians(pw2_degree)
-        pw1_err = np.radians(pw1_degree_err)
-        pw2_err = np.radians(pw2_degree_err)
         corr = np.cos(pw2)*np.cos(pw2)/np.cos(pw1)/np.cos(pw1)   # Korrekturfaktor
         err = 2.0*energy*np.cos(pw2)/np.cos(pw1)/np.cos(pw1) * (np.sin(pw1)*np.cos(pw2)/np.cos(pw1)*pw1_err + np.sin(pw2)*pw2_err) # Fehler der korrigierten Energie
         return corr*energy, err
@@ -652,7 +644,7 @@ class STEP():
         # Berechnung der Energie-Mittelwerte und Mittelung der Pitchwinkel über Intervalle der Länge window_width
         
         # Zunächst alle Bilddateien aus gif/-Ordner löschen, um Probleme beim erstellen der Gifs zu vermeiden.
-        dir = "gif_images"
+        dir = "gif_images/"
         filelist = glob.glob(os.path.join(dir,"*"))
         for f in filelist:
             os.remove(f)
@@ -695,10 +687,10 @@ class STEP():
                 vmax = np.nanmax(pixel_means[k])
             if np.nanmin(pixel_means[k]) < vmin:
                 vmin = np.nanmin(pixel_means[k])
-            if np.nanmax(pw[k-1]) > vmax_pw:
-                vmax_pw = np.nanmax(pw[k-1])
-            if np.nanmin(pw[k-1]) < vmin_pw:
-                vmin_pw = np.nanmin(pw[k-1])
+            if np.nanmax(np.degrees(pw[k-1])) > vmax_pw:
+                vmax_pw = np.nanmax(np.degrees(pw[k-1]))
+            if np.nanmin(np.degrees(pw[k-1])) < vmin_pw:
+                vmin_pw = np.nanmin(np.degrees(pw[k-1]))
                                   
                     
         
@@ -712,9 +704,9 @@ class STEP():
             c = [pixel_means[j][ind][k] for j in range(11,16)]        
             data_means = np.array([c,b,a])
             
-            d = [pw[j-1][ind][k] for j in range(1,6)]
-            e = [pw[j-1][ind][k] for j in range(6,11)]
-            f = [pw[j-1][ind][k] for j in range(11,16)]  
+            d = [np.degrees(pw[j-1][ind][k]) for j in range(1,6)]
+            e = [np.degrees(pw[j-1][ind][k]) for j in range(6,11)]
+            f = [np.degrees(pw[j-1][ind][k]) for j in range(11,16)]  
             pw_list = np.array([f,e,d])
             
             

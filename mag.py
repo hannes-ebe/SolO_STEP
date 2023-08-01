@@ -15,24 +15,38 @@ from cdflib import CDF,cdfepoch
 import matplotlib.pyplot as plt
 
 class MAGdata(object):
-    def __init__(self, path = '/data/projects/solo/mag/l2_soar/rtn_1minute', period = (dt.datetime(2022,1,1),dt.datetime(2022,1,2)), res = 'min'):
+    def __init__(self, period = (dt.datetime(2022,1,1),dt.datetime(2022,1,2)), mag_path = 'default', frame = 'srf'):
         '''Nutze automatisch Level 2 Daten. Wenn ich einen Tag laden will, muss ich bei period den nächsten Tag als obere Grenze angeben.
-        Lade die minütlichen Daten. Ich habe auch nicht ewig Zeit. Für 8 Hz-Daten muss res = None.'''
+        Ich kann angeben, ob ich die Daten im SRF oder in RTN (minütlich oder 8 Hz) laden will ('srf','rtn_min','rtn_8hz').
+        Im SRF wird die x-Koordinate unter R, die y-Koordinate unter T und die z-Koordinate unter N gespeichert. Übergebe die Winkel immer
+        in Radians an die Funktionen.
+        Schreibe Loader so, dass nur einzelne Tage geladen werden können. Das macht das Laden der Flow-Vektoren deutlich einfacher.'''
     
-        self.path = path
+        if mag_path == 'default':
+            if frame == 'srf':
+                self.path = '/data/projects/solo/mag/l2_soar/srf'
+            if frame == 'rtn_min':
+                self.path = '/data/projects/solo/mag/l2_soar/rtn_1minute'
+            if frame == 'rtn_8hz':
+                self.path = '/data/projects/solo/mag/l2_soar/rtn_high_time_res'
+        else:
+            self.path = mag_path
         self.period = period
-        self.res = res           # res = None -> 8 Hz data
+        self.frame = frame          
         self.B_R = np.zeros((0))
         self.B_T = np.zeros((0))
         self.B_N = np.zeros((0))
         self.time = []
+        self.flow_vector = np.array([[-0.8412,  0.4396,  0.3149], [-0.8743,  0.457,   0.1635], [-0.8862,  0.4632, -0.    ], [-0.8743,  0.457,  -0.1635], [-0.8412,  0.4396, -0.315 ], [-0.7775,  0.5444,  0.3149], [-0.8082,  0.5658,  0.1635], [-0.8191,  0.5736,  0.    ], [-0.8082,  0.5659, -0.1634], [-0.7775,  0.5444, -0.3149], [-0.7008,  0.6401,  0.3149], [-0.7284,  0.6653,  0.1634], [-0.7384,  0.6744, -0.    ], [-0.7285,  0.6653, -0.1635], [-0.7008,  0.6401, -0.315 ]])
         self.pitchangles = []
         self.pitchangles_err = []
-        # Blickrichtung der einzelnen Pixel (Phi, Theta):
-        self.fov = np.array([[-25,24],[-25,12],[-25,0],[-25,-12],[-25,-24],[-35,24],[-35,12],[-35,0],[-35,-12],[-35,-24],[-45,24],[-45,12],[-45,0],[-45,-12],[-45,-24]])
+        # Blickrichtung der einzelnen Pixel (Phi, Theta) (Wichtig es wird von der Sonne zum Spacecraft geschaut!!!):
+        self.fov = np.array([[155,24],[155,12],[155,0],[155,-12],[155,-24],[145,24],[145,12],[145,0],[145,-12],[145,-24],[135,24],[135,12],[135,0],[135,-12],[135,-24]])
+        # Hier nochmal Blickrichtungen vom Spacecraft zur Sonne:
+        fov_rtn = np.array([[-25,24],[-25,12],[-25,0],[-25,-12],[-25,-24],[-35,24],[-35,12],[-35,0],[-35,-12],[-35,-24],[-45,24],[-45,12],[-45,0],[-45,-12],[-45,-24]])
         
         self._load()
-        self._calc_angles()
+        # self._calc_angles()
         self._calc_pw()
         # self._calc_pw_err()
         
@@ -42,7 +56,7 @@ class MAGdata(object):
             y = d.year
             m = d.month
             dd = d.day
-            if not self.res:
+            if self.frame == 'rtn_8hz':
                 l = os.listdir(self.path + '/%.4i/'%y)
                 l.sort()
                 ll = ['solo_L2_mag-rtn-normal_%.4i%.2i%.2i'%(y,m,dd) in s for s in l]
@@ -52,10 +66,20 @@ class MAGdata(object):
                         fname = self.path + '/%.4i/'%(y) + l[i]
 
                 print(d,fname)
-            if self.res == 'min':
+            if self.frame == 'rtn_min':
                 l = os.listdir(self.path + '/%.4i/'%y)
                 l.sort()
                 ll = ['solo_L2_mag-rtn-normal-1-minute_%.4i%.2i%.2i'%(y,m,dd) in s for s in l]
+                fname =''
+                for i,n in enumerate(ll):
+                    if n:
+                        fname = self.path + '/%.4i/'%(y) + l[i]
+
+                print(d,fname)
+            if self.frame == 'srf':
+                l = os.listdir(self.path + '/%.4i/'%y)
+                l.sort()
+                ll = ['solo_L2_mag-srf-normal_%.4i%.2i%.2i'%(y,m,dd) in s for s in l]
                 fname =''
                 for i,n in enumerate(ll):
                     if n:
@@ -69,7 +93,10 @@ class MAGdata(object):
                 for tt in t:
                     self.time.append(dt.datetime.fromisoformat(str(tt)[:26]))
                     self.time[-1] = self.time[-1].replace(tzinfo = None)
-                b = dat.varget('B_RTN')
+                if self.frame == 'srf':
+                    b = dat.varget('B_SRF')
+                if self. frame == 'rtn_min' or self.frame == 'rtn_8hz':
+                    b = dat.varget('B_RTN')
                 self.B_R = np.append(self.B_R,np.array(b[:,0]))
                 self.B_T = np.append(self.B_T,np.array(b[:,1]))
                 self.B_N = np.append(self.B_N,np.array(b[:,2]))
@@ -82,37 +109,23 @@ class MAGdata(object):
         self.B_N = np.array(self.B_N).flatten()
 
     def _calc_angles(self):
-        '''Winkel der Magnetfeldvektoren im Spacecraft-Frame'''
+        '''Winkel Phi und Theta der Magnetfeldvektoren im Spacecraft-Frame'''
         self.phi = np.arctan2(self.B_T,self.B_R)
         self.theta = np.arctan2(self.B_N,np.sqrt(self.B_T**2+self.B_R**2))
         
-    def pw(self,v_phi,v_theta):
-        '''Es ist wichtig die Normierung zu beachten. Wenn ich die RTN-Koordinaten über die Winkel beschreibe, kann ich die Vorfaktoren 1 setzen.
-        Numpy nimmt die Winkel in Radians. Muss den Spezialfall von Werten größer 1 im arccos abfangen Dieser Sonderfall ist hier erstmal ignoriert. 
-        Für das Magnetfeld, werden die Daten des Objekts genommen.
-        Der Winkel \phi gibt die Drehung in der RT-Ebene und \theta in der RN-Ebene.
-        Für die Umrechnung müsste mit v als Länge des Vektors gelten:
-            R = v*cos(phi)*cos(theta)
-            T = v*sin(phi)*cos(theta)
-            N = v*sin(theta)
-        Die Attribute phi und theta beziehen sich bei Lars auf das Magnetfeld.'''
-        v_theta = v_theta/360*2*np.pi
-        v_phi = v_phi/360*2*np.pi
-        B_theta = self.theta/360*2*np.pi
-        B_phi = self.phi/360*2*np.pi
-        argument = np.cos(v_theta)*np.cos(v_phi)*np.cos(B_theta)*np.cos(B_phi) + np.cos(v_theta)*np.sin(v_phi)*np.cos(B_theta)*np.sin(B_phi) + np.sin(v_theta)*np.sin(B_theta)
-        # if argument > 1.0 and v_theta == B_theta and v_phi == B_phi:
-        #     argument = 1.0
-        pitchangle = np.arccos(argument)/np.pi*180
-        return pitchangle
+    def pw(self,flow,B):
+        '''Übergebe den particle flow-Vektor als Geschwindigkeit und den Magnetfeldvektor (am besten in SRF) und berechne die Pitchwinkel über das Skalarprodukt.'''
+        len_flow = np.sqrt(flow[0]**2 + flow[1]**2 + flow[2]**2)
+        len_B = np.sqrt(B[0]**2 + B[1]**2 + B[2]**2)
+        argument = (flow[0]*B[0] + flow[1]*B[1] + flow[2]*B[2])/len_flow/len_B
+        result = np.arccos(argument)
+        return result
         
     def _calc_pw(self):
         '''Berechne die Pitchwinkel für die Elektronen, welche auf STEP treffen in erster Näherung.
-        Dafür wird der Winkel zwischen den Blickrichtungen der Pixel und dem Magnetfeld herangezogen.'''
+        Dafür wird der Winkel zwischen dem particle flow vector der Pixel und dem Magnetfeld herangezogen.'''
         for i in range(15):
-            v_phi = self.fov[i][0]
-            v_theta = self.fov[i][1]
-            self.pitchangles.append(self.pw(v_phi,v_theta))
+            self.pitchangles.append(self.pw(self.flow_vector[i],np.array([self.B_R,self.B_T,self.B_N])))
         self.pitchangles = np.array(self.pitchangles)
         
         
@@ -193,9 +206,9 @@ class MAGdata(object):
 
         for i in range(1,16):
             if err == True:
-                ax[i].errorbar(self.time,self.pitchangles[i-1],yerr=self.pitchangles_err[-1],marker='x')
+                ax[i].errorbar(self.time,np.degrees(self.pitchangles[i-1]),yerr=np.degrees(self.pitchangles_err[-1]),marker='x')
             else:
-                ax[i].scatter(self.time,self.pitchangles[i-1],marker='x')
+                ax[i].scatter(self.time,np.degrees(self.pitchangles[i-1]),marker='x')
             ax[i].tick_params(axis='x', labelrotation=90)
         
         plt.show()
@@ -207,14 +220,14 @@ class MAGdata(object):
         if period != None and window_width == None:
             mask = (self.time >= period[0]) * (self.time < period[1])
             for i in pixel_list:
-                ax.plot(self.time[mask],self.pitchangles[i-1][mask],marker='x',label=f'pixel {i}')
+                ax.plot(self.time[mask],np.degrees(self.pitchangles[i-1][mask]),marker='x',label=f'pixel {i}')
         elif period != None and window_width != None:
             pw, pw_time =self.average_pw(period=period,window_width=window_width)
             for i in pixel_list:
-                ax.plot(pw_time,pw[i-1],marker='x',label=f'pixel {i}')
+                ax.plot(pw_time,np.degrees(pw[i-1]),marker='x',label=f'pixel {i}')
         else:
             for i in pixel_list:
-                ax.plot(self.time,self.pitchangles[i-1],marker='x',label=f'pixel {i}')
+                ax.plot(self.time,np.degrees(self.pitchangles[i-1]),marker='x',label=f'pixel {i}')
 
         ax.set_ylabel('pitch angle [°]')
         ax.set_xlabel('time')
@@ -240,6 +253,10 @@ class MAGdata(object):
         ax.set_ylabel('magnetic field component [nT]')
         ax.set_xlabel('time')
         ax.tick_params(axis='x',labelrotation=45)
-        plt.title(f'magnetic field in RTN-coordinates')
+        if self.frame == 'srf':
+            ayuda = 'SRF'
+        if self.frame == 'rtn_min' or self.frame == 'rtn_8hz':
+            ayuda = 'RTN'
+        plt.title(f'magnetic field in {ayuda}-coordinates')
         plt.legend()
         plt.savefig(rpath)

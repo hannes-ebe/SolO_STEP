@@ -199,11 +199,13 @@ class STEP():
         a = np.ones((len_ebins,len_time))
         for i in range(len_ebins):
             a[i,:]*=i    # Setze in erster array-Dimension die Werte auf den entsprechenden Index
-        mask = a < grenzfunktion(np.arange(len_time))[np.newaxis,:]
+        # Es sollen auch die Daten ignoriert werden, die unterhalb der Grenzfunktion liegen. Außerdem zählen nur Daten innerhalb des Messbereiches von STEP: (ebins[8], ebins[40])
+        mask = (a < grenzfunktion(np.arange(len_time))[np.newaxis,:]) * (a >= 8) * (a <= 40) 
         return mask
     
     def set_zero(self,pldat,mask):
-        '''Übergebe eine Maske und die Daten aller Pixel. Werte, die laut Maske True sind, werden auf 0 gesetzt.'''
+        '''Übergebe eine Maske und die Daten aller Pixel. Werte, die laut Maske True sind, werden auf 0 gesetzt. Zusätzlich werden alle Daten ignoriert, die außerhalb des 
+        Messbereiches von STEP liegen, also außerhalb der blauen Linien.'''
         for pdat in pldat:
             pdat[mask] = 0
         return pldat
@@ -406,6 +408,7 @@ class STEP():
         Wenn sowohl box_list als auch  grenzfunktion gegeben sind, wird grenzfunktion genutzt.'''
         i = 0
         pixel_means = [[] for i in range(16)]     # Liste mit Listen der Mittelwerte der einzelnen Pixel. Die erste Liste enthält die Zeitstempel (jeweils Mitte der Zeitfenster)
+        pixel_var = [[] for i in range(16)]       # Liste mit Listen der Varianzen der einzelnen Pixel. Enthält an erster Stelle ebenfalls die Zeitstempel
         
         if callable(grenzfunktion):
             '''Bereite zunächst little_helper_dat vor und erzeuge dann eine Maske, die ja auf alle Pixel angewendet werden kann.
@@ -434,6 +437,7 @@ class STEP():
 
         while (period[0] + dt.timedelta(minutes=(i+1)*window_width)) <= period[1]:
             pixel_means[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
+            pixel_var[0].append(period[0] + dt.timedelta(minutes=(i+0.5)*window_width))
             
             # Alte Berechnung der Mittelwerte:
 
@@ -450,7 +454,7 @@ class STEP():
             # i +=1
 
 
-            # Neue Berechnung der Mittelwerte 
+            # Neue Berechnung der Mittelwerte und Varianzen
             
             for k in pixel_list:
                 pdat = pldat[k][i*window_width:(i+1)*window_width]
@@ -458,14 +462,18 @@ class STEP():
                 # calculating mean
                 mean = np.sum(mittelwerte_energie_bins*integral)/np.sum(integral)
                 pixel_means[k].append(mean)
+
+                var = np.sum(integral*(mittelwerte_energie_bins - mean)**2)/np.sum(integral)
+                pixel_var[k].append(var)
             i +=1
             
         
         for i in range(len(pixel_means)):
             # Array erstellen
             pixel_means[i] = np.array(pixel_means[i])
+            pixel_var[i] = np.array(pixel_var[i])
             
-        return pixel_means
+        return pixel_means, pixel_var
     
     def calc_sliding_energy_means(self,ebins=ebins,res = '1min', head = -1, period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)), grenzfunktion=None, below=True, box_list=None, window_width=5, sliding_width=4, pixel_list=[i for i in range(1,16)], norm = 'tmax', overflow = True, esquare = False):
         '''Wichtig: Die Energie ist in keV angegeben!!!
@@ -540,7 +548,7 @@ class STEP():
         plt.legend()
         plt.savefig(rpath)
         
-    def pixel_comparison(self, pixel_means, pw, pw_time, rpath, pixel1, pixel2):
+    def pixel_comparison(self, pixel_means, pixel_var, pw, pw_time, rpath, pixel1, pixel2):
         '''Vergleich zweier Pixel mit Energie-Mittelwerten und Pitchwinkel.
         Die Zeit der Energiemittelwerte steckt in pixel_means. Für die Pitchwinkel
         wird sie extra übergeben.'''
@@ -551,7 +559,8 @@ class STEP():
         ax_quot = plt.subplot(gs[1],sharex=ax)
         ax_quot_pw = ax_quot.twinx()
         for i in [pixel1, pixel2]:
-            ax.plot(pixel_means[0],pixel_means[i],marker='x',label=f'energy mean of pixel {i}')
+            # Plotte einfache Standardabweichung als Fehler mit!!!
+            ax.errorbar(pixel_means[0],pixel_means[i],yerr=np.sqrt(pixel_var[i]),marker='x',label=f'energy mean of pixel {i}')
             ax_pw.plot(pixel_means[0],np.degrees(pw[i-1]),marker="^",label=f'pitch angle of pixel {i}')
         ax.set_ylabel('mean of energy [keV]')
         ax_pw.set_ylabel('pitch angle [°]')
@@ -598,7 +607,7 @@ class STEP():
         
         
         
-    def pixel_comparison_corrected(self, pixel_means, pw, rpath, pixel1, pixel2):
+    def pixel_comparison_corrected(self, pixel_means, pixel_var, pw, rpath, pixel1, pixel2):
         '''Plot der originalen Energiemittelwerte sowie der Korrektur.'''
         
         plt.figure(figsize=(10,9))
@@ -606,13 +615,13 @@ class STEP():
         
         ax = plt.subplot(gs[0])
         
-        ax.plot(pixel_means[0],pixel_means[pixel1],marker='x',label=f'energy mean of pixel {pixel1}')
-        ax.plot(pixel_means[0],pixel_means[pixel2],marker='x',label=f'energy mean of pixel {pixel2}')
+        ax.errorbar(pixel_means[0],pixel_means[pixel1],yerr=np.sqrt(pixel_var[pixel1]),marker='x',label=f'energy mean of pixel {pixel1}')
+        ax.errorbar(pixel_means[0],pixel_means[pixel2],yerr=np.sqrt(pixel_var[pixel2]),marker='x',label=f'energy mean of pixel {pixel2}')
         
         # Übergebe willkürliche Fehler, da ich diese eh nicht brauche.
         energy2_corrected = self.energy_correction(pixel_means[pixel2],pw[pixel1-1],pw[pixel2-1],2,2)[0]
         
-        ax.plot(pixel_means[0],energy2_corrected,marker='x',label=f'corrected energy mean of pixel {pixel2}')
+        ax.errorbar(pixel_means[0],energy2_corrected,yerr=np.sqrt(pixel_var[pixel2]),marker='x',label=f'corrected energy mean of pixel {pixel2}')
         
         ax.set_ylabel('mean of energy [keV]')
         ax.legend()
@@ -652,7 +661,7 @@ class STEP():
         
         # Berechnung der Energiemittelwerte
         # pixel_list kann bei Aufruf von distribution_ring nicht verändert werden, da ich eh alle Pixel brauche...
-        pixel_means = self.calc_energy_means(ebins=ebins,res=res,head=head,period=period,grenzfunktion=grenzfunktion,below=below,box_list=box_list,window_width=window_width,pixel_list=[i for i in range(1,16)],norm=norm,overflow=overflow,esquare=esquare)
+        pixel_means, pixel_var = self.calc_energy_means(ebins=ebins,res=res,head=head,period=period,grenzfunktion=grenzfunktion,below=below,box_list=box_list,window_width=window_width,pixel_list=[i for i in range(1,16)],norm=norm,overflow=overflow,esquare=esquare)
         
         # Berechnung der Pitchwinkel
         pw, pw_time = self.calc_pw(period=period,window_width=window_width)

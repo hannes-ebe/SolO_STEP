@@ -59,7 +59,7 @@ def grenz(t):
 # pixel_means1 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, window_width=1)
 
 ### Achtung hier mal andere Normierung!!! ###
-pixel_means5 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, norm='ptmax')
+pixel_means5, pixel_var5 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, norm='ptmax')
 
 pw5, pw5_time = dat.calc_pw(period, window_width=5)
 # pw1 pw1_time = dat.calc_pw(period, window_width=1)
@@ -89,19 +89,19 @@ dat.distribution_ring('time_series_energy_means_pw_2021_12_04','mean of energy (
 ### Plots für Pixel mit ähnlichen Pitchwinkeln: ###
 
 def compare_opposing_pixels(dir):
-    dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_1_5.png', 1, 5)
-    dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_2_4.png', 2, 4)
-    dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_6_10.png', 6, 10)
-    dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_7_9.png', 7, 9)
-    dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_11_15.png', 11, 15)
-    dat.pixel_comparison(pixel_means5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_12_14.png', 12, 14)
+    dat.pixel_comparison(pixel_means5, pixel_var5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_1_5.png', 1, 5)
+    dat.pixel_comparison(pixel_means5, pixel_var5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_2_4.png', 2, 4)
+    dat.pixel_comparison(pixel_means5, pixel_var5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_6_10.png', 6, 10)
+    dat.pixel_comparison(pixel_means5, pixel_var5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_7_9.png', 7, 9)
+    dat.pixel_comparison(pixel_means5, pixel_var5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_11_15.png', 11, 15)
+    dat.pixel_comparison(pixel_means5, pixel_var5, pw5, pw5_time, 'plausibility_pw/' + dir + '/comparison_5_minutes_pixel_12_14.png', 12, 14)
 
-    dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_1_5.png', 1, 5)
-    dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_2_4.png', 2, 4)
-    dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_6_10.png', 6, 10)
-    dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_7_9.png', 7, 9)
-    dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_11_15.png', 11, 15)
-    dat.pixel_comparison_corrected(pixel_means5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_12_14.png', 12, 14)
+    dat.pixel_comparison_corrected(pixel_means5, pixel_var5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_1_5.png', 1, 5)
+    dat.pixel_comparison_corrected(pixel_means5, pixel_var5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_2_4.png', 2, 4)
+    dat.pixel_comparison_corrected(pixel_means5, pixel_var5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_6_10.png', 6, 10)
+    dat.pixel_comparison_corrected(pixel_means5, pixel_var5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_7_9.png', 7, 9)
+    dat.pixel_comparison_corrected(pixel_means5, pixel_var5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_11_15.png', 11, 15)
+    dat.pixel_comparison_corrected(pixel_means5, pixel_var5, pw5, 'plausibility_pw/' + dir + '/comparison_corrected_5_minutes_pixel_12_14.png', 12, 14)
     
 
 compare_opposing_pixels('2021_12_04')

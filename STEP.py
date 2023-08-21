@@ -644,6 +644,70 @@ class STEP():
         plt.savefig(rpath)
         plt.close('all')
 
+    
+    def pixel_comparison_total(self, pixel_means, pixel_var, pw, pw_time, rpath, pixel1, pixel2):
+        '''Plot der originalen Energiemittelwerte sowie der Korrektur. Zusätzlich die Quotienten und Differenzen.'''
+        
+        plt.figure(figsize=(10,15))
+        gs = gridspec.GridSpec(4,1,height_ratios=[2,1,1,1])
+        
+        ax = plt.subplot(gs[0])
+        
+        ax.errorbar(pixel_means[0],pixel_means[pixel1],yerr=np.sqrt(pixel_var[pixel1]),marker='x',label=f'energy mean of pixel {pixel1}')
+        ax.errorbar(pixel_means[0],pixel_means[pixel2],yerr=np.sqrt(pixel_var[pixel2]),marker='x',label=f'energy mean of pixel {pixel2}')
+        
+        # Übergebe willkürliche Fehler, da ich diese eh nicht brauche.
+        energy2_corrected = self.energy_correction(pixel_means[pixel2],pw[pixel1-1],pw[pixel2-1],2,2)[0]
+        
+        ax.errorbar(pixel_means[0],energy2_corrected,yerr=np.sqrt(pixel_var[pixel2]),marker='x',label=f'corrected energy mean of pixel {pixel2}')
+        # ax.set_yscale('log')
+        
+        ax.set_ylabel('mean of energy [keV]')
+        ax.legend()
+        ax.set_title('Correction of energy means')
+
+
+        
+        # Plots der Differenzen der Energien
+        ax2 = plt.subplot(gs[1],sharex=ax)
+        
+        diff_original = pixel_means[pixel2] - pixel_means[pixel1]
+        diff_corrected = energy2_corrected - pixel_means[pixel1]
+        
+        ax2.plot(pixel_means[0],diff_original,marker='x',label='difference of energy means')
+        ax2.plot(pixel_means[0],diff_corrected,marker='x',label='difference of energy means with correction')
+        ax2.axhline(0,color='tab:red')
+        
+        ax2.set_ylabel('difference of energy means [keV]')
+        ax2.legend()
+
+
+
+        # Plots der Pitchwinkel
+        ax3 = plt.subplot(gs[2],sharex=ax)
+        ax3.plot(pw_time,np.degrees(pw[pixel1-1]),marker='x',label=f'pitch angle of pixel {pixel1}')
+        ax3.plot(pw_time,np.degrees(pw[pixel2-1]),marker='x',label=f'pitch angle of pixel {pixel2}')
+        
+        ax3.set_ylabel('Pitch angle [°]')
+        ax3.legend()
+
+
+        # Plots der Differenz der Pitchwinkel
+        ax4 = plt.subplot(gs[3],sharex=ax)
+
+        diff = np.degrees(np.array(pw[pixel1-1])) - np.degrees(np.array(pw[pixel2-1]))
+        ax4.plot(pw_time,diff,marker='x',label=f'difference of pitch angles (pixel {pixel1} - pixel {pixel2})')
+
+        ax4.set_ylabel('difference of pitch angles [°]')
+        ax4.set_xlabel('time')
+        ax4.tick_params(axis='x',labelrotation=45)
+        ax4.legend()
+
+
+        plt.subplots_adjust(hspace=0.001)
+        plt.savefig(rpath)
+        plt.close('all')
+
         
         
     def distribution_ring(self, filename, title, head, norm, period, grenzfunktion=None,below=True,box_list=None, norm_pixel=3, correction = False, save='gif/', res = '1min', overflow = True, esquare = False,window_width = 5, close=True, sorted_by_energy=False):

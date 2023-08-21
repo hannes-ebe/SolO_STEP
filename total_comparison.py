@@ -36,8 +36,32 @@ pw5, pw5_time = dat.calc_pw(period, window_width=5)
 
 dat.plot_ts(period=period, head=-1, save='total_comparison/', norm='tmax',grenzfunktion=grenz)
 
+# for i in range(1,16):
+#     for j in range(1,16):
+#         # Bei gleichen Pixeln dürfte sich nichts ändern...
+#         dat.pixel_comparison_corrected(pixel_means5, pixel_var5, pw5, f'total_comparison/corrected_energies_5_minutes_pixel_{i}_{j}.png', i, j)
+#         plt.close('all')
+
+
+
+
+### Untersuche Pixel 4 etwas genauer ###
+
+for j in range(1,16):
+    dat.pixel_comparison_total(pixel_means5, pixel_var5, pw5, pw5_time, f'total_comparison/pixel4_21_12_04/corrected_energies_total_info_pixel_i=4_{j}.png', 4, j)
+    plt.close('all')
+
 for i in range(1,16):
-    for j in range(1,16):
-        # Bei gleichen Pixeln dürfte sich nichts ändern...
-        dat.pixel_comparison_corrected(pixel_means5, pixel_var5, pw5, f'total_comparison/corrected_energies_5_minutes_pixel_{i}_{j}.png', i, j)
-        plt.close('all')
+    dat.pixel_comparison_total(pixel_means5, pixel_var5, pw5, pw5_time, f'total_comparison/pixel4_21_12_04/corrected_energies_total_info_pixel_{i}_j=4.png', i, 4)
+    plt.close('all')
+
+
+### Teste mal Korrektur auf Pixel 11 ###
+
+for j in range(1,16):
+    dat.pixel_comparison_total(pixel_means5, pixel_var5, pw5, pw5_time, f'total_comparison/pixel11_21_12_04/corrected_energies_total_info_pixel_i=11_{j}.png', 11, j)
+    plt.close('all')
+
+for i in range(1,16):
+    dat.pixel_comparison_total(pixel_means5, pixel_var5, pw5, pw5_time, f'total_comparison/pixel11_21_12_04/corrected_energies_total_info_pixel_{i}_j=11.png', i, 11)
+    plt.close('all')

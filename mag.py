@@ -214,7 +214,7 @@ class MAGdata(object):
         plt.show()
         
     def pw_ts(self,rpath,pixel_list,period=None,window_width=None):
-        '''Plottet die Piitchwinkel für alle angegebenen Pixel.'''
+        '''Plottet die Pitchwinkel für alle angegebenen Pixel.'''
         fig, ax = plt.subplots(figsize=(10,6))
 
         if period != None and window_width == None:

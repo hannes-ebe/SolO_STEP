@@ -22,7 +22,17 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
        372.736])
 
 
-
+def get_date_from_period(period):
+    year = str(period[0].year - 2000)
+    if period[0].month < 10:
+        month = '0' + str(period[0].month)
+    else:
+        month = str(period[0].month)
+    if period[0].day < 10:
+        day = '0' + str(period[0].day)
+    else:
+        day = str(period[0].day)
+    return year, month, day
 
 def func_total_comparison(dat, period, grenz):
     pixel_means5, pixel_var5 = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, norm='ptmax')
@@ -116,32 +126,43 @@ def step_plot_correction(dat, period, grenz):
     
     
 
-### 2021-12-4 ###
+# ### 2021-12-4 ###
 
-dat = STEP(2021, 12, 4, mag_path = 'default', mag_frame = 'srf')
-# dat = STEP(2021, 12, 4, rpath='data/STEP/', mag_path='data/mag/srf', mag_frame = 'srf')
-period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
-def grenz(t):
-    return -0.5*t + 20
+# dat = STEP(2021, 12, 4, mag_path = 'default', mag_frame = 'srf')
+# # dat = STEP(2021, 12, 4, rpath='data/STEP/', mag_path='data/mag/srf', mag_frame = 'srf')
+# period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
+# def grenz(t):
+#     return -0.5*t + 20
 
-func_total_comparison(dat,period,grenz)
-step_plot_correction(dat,period,grenz)
+# func_total_comparison(dat,period,grenz)
+# step_plot_correction(dat,period,grenz)
 
-### 2022-11-12 ###
+# ### 2022-11-12 ###
 
-dat = STEP(2022, 11, 12, mag_path='default', mag_frame='srf')
-period = (dt.datetime(2022,11,12,2,40),dt.datetime(2022,11,12,3,25))
+# dat = STEP(2022, 11, 12, mag_path='default', mag_frame='srf')
+# period = (dt.datetime(2022,11,12,2,40),dt.datetime(2022,11,12,3,25))
+# grenz = None
+
+# func_total_comparison(dat,period,grenz)S
+# step_plot_correction(dat,period,grenz)
+
+
+# ### 2022-11-19 ###
+
+# dat = STEP(2022, 11, 19, mag_path = 'default', mag_frame = 'srf')
+# period = (dt.datetime(2022,11,19,14),dt.datetime(2022,11,19,16,15))
+# grenz = None
+
+
+### 2022-12-01 ###
+
+dat = STEP(2022, 12, 1, mag_path = 'default', mag_frame = 'srf')
+period = [dt.datetime(2022,12,1,6,30),dt.datetime(2022,12,1,9,30)]
 grenz = None
 
-func_total_comparison(dat,period,grenz)
-step_plot_correction(dat,period,grenz)
 
-
-### 2022-11-19 ###
-
-dat = STEP(2022, 11, 19, mag_path = 'default', mag_frame = 'srf')
-period = (dt.datetime(2022,11,19,14),dt.datetime(2022,11,19,16,15))
-grenz = None
+year, month, day = get_date_from_period(period)
 
 func_total_comparison(dat,period,grenz)
 step_plot_correction(dat,period,grenz)
+dat.mag.srf_ts(period,f'total_comparison/mag_ts_{year}_{month}_{day}.png')

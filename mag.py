@@ -213,6 +213,7 @@ class MAGdata(object):
         
         plt.show()
         
+        
     def pw_ts(self,rpath,pixel_list,period=None,window_width=None):
         '''Plottet die Pitchwinkel für alle angegebenen Pixel.'''
         fig, ax = plt.subplots(figsize=(10,6))
@@ -235,6 +236,7 @@ class MAGdata(object):
         plt.title('pitch angle')
         plt.legend()
         plt.savefig(rpath)
+
 
     def mag_ts(self,rpath,period=None):
         '''Plottet das Magnetfeld'''
@@ -260,3 +262,26 @@ class MAGdata(object):
         plt.title(f'magnetic field in {ayuda}-coordinates')
         plt.legend()
         plt.savefig(rpath)
+        
+    def srf_ts(self,period,savepath):
+        '''time series of magnetic field and pitch angles in srf'''
+        mask = (period[0] <= self.time) * (period[1] > self.time)
+        
+        fig, (ax1, ax2) = plt.subplots(2,1,figsize=(10,10),sharex=True)
+        ax1.plot(self.time[mask],self.B_R[mask],label='X')
+        ax1.plot(self.time[mask],self.B_T[mask],label='Y')
+        ax1.plot(self.time[mask],self.B_N[mask],label='Z')
+        ax1.legend()
+        ax1.set_ylabel('magnetic field component [nT]')
+        ax1.set_title(f'Investigation of Magnetic Field: {period[0]} to {period[1]}')
+    
+        for i in [1,2,3,4,5]:
+            ax2.plot(self.time[mask],np.degrees(self.pitchangles[i-1][mask]),label=f'pixel {i}')
+        ax2.legend()
+        ax2.set_xlabel('time')
+        ax2.set_ylabel('pitch angle [°]')
+        ax2.tick_params(axis='x', labelrotation=45)
+    
+        plt.subplots_adjust(hspace=0.001)
+        plt.savefig(savepath)
+        plt.close('all')

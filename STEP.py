@@ -399,7 +399,6 @@ class STEP():
         return pw, pw_time
 
     
-    
     def calc_energy_means(self,ebins=ebins,res = '1min', head = -1, period = (dt.datetime(2021,12,4,13,30),dt.datetime(2021,12,4,16,30)), grenzfunktion=None, below=True, box_list=None, window_width=5, pixel_list=[i for i in range(1,16)], norm = 'tmax', overflow = True, esquare = False):
         '''Wichtig: Die Energie ist in keV angegeben!!!
         Falls andere Zeitauflösung als Minuten gewählt wird, kann es Probleme mit window_width und der Berechnung der Zeit geben.

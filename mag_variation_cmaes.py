@@ -93,13 +93,19 @@ es_pixel = []
 
 len_ts = len(pixel_means[0])
 
+datei = open('B_offsets_ts.txt','x')  # x erzeugt neue Datei und gibt Fehler, falls sie bereits existiert.
+datei.write("Optimales Magnetfeld fuer die einzelnen Zeitpunkte:")
+
 for point_in_time in range(0,len_ts):
+    print(f'Started calculating point in time {point_in_time}')
     x_opt, es = cma.fmin2(objective_function = func_to_min_each_point_in_time, x0 = [B_offset0], sigma0 = 0.5, args = [pixel_means,point_in_time], options = {'maxfevals':100})
     B_offsets_ts.append(x_opt)
     es_pixel.append(es)
+    datei.write(f"\npot{point_in_time}: {x_opt}")
+    print(f'Finished calculating point in time {point_in_time}')
     
-datei = open('B_offsets_ts.txt','r')
-datei.write(f"{B_offsets_ts}")
+datei.write("\nZeitreihe der optimalen Magnetfelder:")
+datei.write(f"\n{B_offsets_ts}")
 datei.close()
 
 print('Idealer Magnetfeld-Offset (time series):')

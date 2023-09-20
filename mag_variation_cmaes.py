@@ -98,7 +98,7 @@ datei.write("Optimales Magnetfeld fuer die einzelnen Zeitpunkte:")
 
 for point_in_time in range(0,len_ts):
     print(f'Started calculating point in time {point_in_time}')
-    x_opt, es = cma.fmin2(objective_function = func_to_min_each_point_in_time, x0 = [B_offset0], sigma0 = 0.5, args = [pixel_means,point_in_time], options = {'maxfevals':100})
+    x_opt, es = cma.fmin2(objective_function = func_to_min_each_point_in_time, x0 = [B_offset0], sigma0 = 0.5, args = [pixel_means,point_in_time], options = {'maxfevals':500})
     B_offsets_ts.append(x_opt)
     es_pixel.append(es)
     datei.write(f"\npot{point_in_time}: {x_opt}")
@@ -112,3 +112,66 @@ print('Idealer Magnetfeld-Offset (time series):')
 for t in range(0,len_ts):
     print(f'Point in time {t}: {B_offsets_ts[t]}')
     
+def step_plot_ideal_offsets_each_ts(dat, period, grenz, Offsets_ts, title=None):
+    '''Übergebe Zeitreihe von idealen Magnetfeld-Offsets, um damit ideale Korrektur zu berechnen.'''
+
+    pixel_means, pixel_var = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, norm='ptmax')
+    
+    len_ts = len(pixel_means[0])
+    
+    # Offsets = np.array([np.zeros(11),np.zeros(11),np.array([i for i in range(-5,6)])]).T
+
+    pixel1 = 3
+    
+    fig, ax = dat.step_plot('time', 'difference of energy means [keV]', f'difference of corrected energy means to pixel {pixel1}')
+
+    year = str(period[0].year - 2000)
+    if period[0].month < 10:
+         month = '0' + str(period[0].month)
+    else:
+        month = str(period[0].month)
+    if period[0].day < 10:
+        day = '0' + str(period[0].day)
+    else:
+        day = str(period[0].day)
+
+    for pixel2 in range(1,16):
+        diff_of_pixel = []
+        for pot in range(len_ts):
+            # Gehen die folgenden zwei zeilen einfacher?
+            pitchangles = calc_pw(dat.mag,Offsets_ts[pot])
+            pw, pw_time = average_pw(dat.mag,period,pitchangles)
+            
+            # Übergebe willkürliche Fehler, da ich diese eh nicht brauche.
+            energy2_corrected = dat.energy_correction(pixel_means[pixel2][pot],pw[pixel1-1][pot],pw[pixel2-1][pot],2,2)[0]
+            diff_corrected = energy2_corrected - pixel_means[pixel1][pot]
+            diff_of_pixel.append(diff_corrected)
+            
+        ax[pixel2].plot(pixel_means[0],diff_of_pixel,marker='x')
+        ax[pixel2].axhline(0,color='tab:red')
+                
+        ax[pixel2].tick_params(axis='x',labelrotation=45)
+    if type(title) == str:
+        plt.savefig(f'mag_variation_cmaes/' + title + '.png')
+    else:
+        plt.savefig(f'mag_variation_cmaes/step_plot_total_correction_differences_energy_pixel{pixel1}_{year}_{month}_{day}_multiple_offsets.png')
+
+    # Noch einen Plot der Zeitreihe der idealen Abweichung:
+    plt.figure(figsize=(10,8))
+    offs = np.array(Offsets_ts).T
+    labels = [r'$B_X$',r'$B_Y$',r'$B_T$']
+    for i,off in enumerate(offs):
+        plt.plot(pixel_means[0],off,label=labels[i])
+    plt.tick_params(axis='x',labelrotation=45)
+    plt.title('Ideal Offsets for Magnetic Field')
+    plt.legend()
+    plt.xlabel('time')
+    plt.ylabel('magnetic field component in nT')
+
+    if type(title) == str:
+        plt.savefig(f'mag_variation_cmaes/' + title + '_mag.png')
+    else:
+        plt.savefig(f'mag_variation_cmaes/step_plot_total_correction_differences_energy_pixel{pixel1}_{year}_{month}_{day}_multiple_offsets_mag.png')
+    plt.close('all')
+
+step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2021_12_04_longer_run')

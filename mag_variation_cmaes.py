@@ -20,8 +20,10 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
 def grenz(t):
     return -0.5*t + 20
 
-# dat = STEP(2021, 12, 4, rpath='data/STEP/', mag_path='data/mag/srf', mag_frame = 'srf')
-dat = STEP(2021,12,4,mag_path='default',mag_frame='srf')
+try:
+    dat = STEP(2021, 12, 4, rpath='data/STEP/', mag_path='data/mag/srf', mag_frame = 'srf')
+except:
+    dat = STEP(2021,12,4,mag_path='default',mag_frame='srf')
 period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
 
 
@@ -70,7 +72,8 @@ pixel_means = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfun
 
 
 def func_to_min_each_point_in_time(B_offset,pixel_means,time_index,reference_pixel=3):
-    '''Berechne gemittelten Abstand der korrigierten Energie zum Referenzpixel für jeden einzelnen Zeitpunkt.'''
+    '''Berechne gemittelten Abstand der korrigierten Energie zum Referenzpixel für jeden einzelnen Zeitpunkt.
+    Minimiere den mittleren quadratischen Abstand (root mean square).'''
     deviation_of_pixels = []
 
     for pixel in range(1,16):
@@ -81,9 +84,9 @@ def func_to_min_each_point_in_time(B_offset,pixel_means,time_index,reference_pix
             diff_corrected = energy2_corrected[time_index] - pixel_means[reference_pixel][time_index]
             deviation_of_pixels.append(diff_corrected)
 
-    total_deviation = np.sum(np.array(deviation_of_pixels))/len(deviation_of_pixels)
+    total_deviation = np.sqrt(np.sum(np.array(deviation_of_pixels)**2)/len(deviation_of_pixels))
     print('calculated function to minimize')
-    return abs(total_deviation)
+    return total_deviation
 
 
 
@@ -174,4 +177,4 @@ def step_plot_ideal_offsets_each_ts(dat, period, grenz, Offsets_ts, title=None):
         plt.savefig(f'mag_variation_cmaes/step_plot_total_correction_differences_energy_pixel{pixel1}_{year}_{month}_{day}_multiple_offsets_mag.png')
     plt.close('all')
 
-step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2021_12_04_longer_run')
+step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2021_12_04_rms')

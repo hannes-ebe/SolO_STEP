@@ -17,15 +17,18 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
        137.216, 149.504, 162.816, 178.176, 194.56 , 211.968, 230.4  ,
        372.736])
 
-def grenz(t):
-    return -0.5*t + 20
+# def grenz(t):
+#     return -0.5*t + 20
 
-try:
-    dat = STEP(2021, 12, 4, rpath='data/STEP/', mag_path='data/mag/srf', mag_frame = 'srf')
-except:
-    dat = STEP(2021,12,4,mag_path='default',mag_frame='srf')
-period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
+# try:
+#     dat = STEP(2021, 12, 4, rpath='data/STEP/', mag_path='data/mag/srf', mag_frame = 'srf')
+# except:
+#     dat = STEP(2021,12,4,mag_path='default',mag_frame='srf')
+# period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
 
+dat = STEP(2022, 11, 12, mag_path='default', mag_frame='srf')
+period = (dt.datetime(2022,11,12,2,40),dt.datetime(2022,11,12,3,25))
+grenz = None
 
 
 def pw(flow,B,B_offset):
@@ -177,4 +180,5 @@ def step_plot_ideal_offsets_each_ts(dat, period, grenz, Offsets_ts, title=None):
         plt.savefig(f'mag_variation_cmaes/step_plot_total_correction_differences_energy_pixel{pixel1}_{year}_{month}_{day}_multiple_offsets_mag.png')
     plt.close('all')
 
-step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2021_12_04_rms')
+# step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2021_12_04_rms')
+step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2022_11_12_rms')

@@ -36,16 +36,16 @@ ebins = np.array([  0.98 ,   2.144,   2.336,   2.544,   2.784,   3.04 ,   3.312,
 
 ### 2022-11-19 ###
 
-dat = STEP(2022, 11, 19, mag_path = 'default', mag_frame = 'srf')
-period = (dt.datetime(2022,11,19,14),dt.datetime(2022,11,19,16,15))
-grenz = None
+# dat = STEP(2022, 11, 19, mag_path = 'default', mag_frame = 'srf')
+# period = (dt.datetime(2022,11,19,14),dt.datetime(2022,11,19,16,15))
+# grenz = None
 
 
 # ### 2022-12-01 ###
 
-# dat = STEP(2022, 12, 1, mag_path = 'default', mag_frame = 'srf')
-# period = [dt.datetime(2022,12,1,6,30),dt.datetime(2022,12,1,9,30)]
-# grenz = None
+dat = STEP(2022, 12, 1, mag_path = 'default', mag_frame = 'srf')
+period = [dt.datetime(2022,12,1,6,30),dt.datetime(2022,12,1,9,30)]
+grenz = None
 
 
 
@@ -200,4 +200,5 @@ def step_plot_ideal_offsets_each_ts(dat, period, grenz, Offsets_ts, title=None):
 
 # step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2021_12_04_rms')
 # step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2022_11_12_rms')
-step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2022_11_19_rms')
+# step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2022_11_19_rms')
+step_plot_ideal_offsets_each_ts(dat,period,grenz,B_offsets_ts,title='ideal_mag_offsets_ts_2022_12_01_rms')

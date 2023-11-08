@@ -1,6 +1,5 @@
-.git
 __pycache__
 python_win.bat
-gif_images
+*image**.png
 data*
 total_comparison/pixel*

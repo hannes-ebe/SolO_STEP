@@ -13,6 +13,7 @@ import pylab as pl
 import os
 from cdflib import CDF,cdfepoch
 import matplotlib.pyplot as plt
+from virtual_detector import *
 
 class MAGdata(object):
     def __init__(self, period = (dt.datetime(2022,1,1),dt.datetime(2022,1,2)), mag_path = 'default', frame = 'srf'):
@@ -120,13 +121,33 @@ class MAGdata(object):
         argument = (flow[0]*B[0] + flow[1]*B[1] + flow[2]*B[2])/len_flow/len_B
         result = np.arccos(argument)
         return result
+    
+    def average_pw(virt_det,pix):
+        '''Berechne die gemittelten Pitchwinkel über Lars virtual_detector.py. Übergebe einen virtual detector.'''
+        sum = 0.0
+        sum_hitfrac = 0.0
+
+        for phii in range(virt_det.cosmu.shape[0]):
+            for thetai in range(virt_det.cosmu.shape[1]):
+                # Beachten, dass mu inn Grad gegeben ist
+                pitchangle = virt_det.mu[phii][thetai]
+                sum += virt_det.hitfrac[pix][phii][thetai] * pitchangle
+                sum_hitfrac += virt_det.hitfrac[pix][phii][thetai]
+        av_pw = sum/sum_hitfrac
+        return av_pw*np.pi/180, av_pw     # Radians, Degree
         
-    def _calc_pw(self):
-        '''Berechne die Pitchwinkel für die Elektronen, welche auf STEP treffen in erster Näherung.
-        Dafür wird der Winkel zwischen dem particle flow vector der Pixel und dem Magnetfeld herangezogen.'''
-        for i in range(15):
-            self.pitchangles.append(self.pw(self.flow_vector[i],np.array([self.B_R,self.B_T,self.B_N])))
-        self.pitchangles = np.array(self.pitchangles)
+    # def _calc_pw(self):
+    #     '''Berechne die Pitchwinkel für die Elektronen, welche auf STEP treffen in erster Näherung.
+    #     Dafür wird der Winkel zwischen dem particle flow vector der Pixel und dem Magnetfeld herangezogen.'''
+    #     ### Muss mit Lars Skript für jeden Punkt einen eigenen virtual detector anlegen... Berechnung auslagern, damit es schneller geht???
+    #     if self.is_average_pw == True:
+    #         virt_det = VDSTEP(B=mag_lars_xyz)
+    #         for i in range(15):
+    #             self.pitchangles.append(self.average_pw(virt_det,i+1))
+    #     else:
+    #         for i in range(15):
+    #             self.pitchangles.append(self.pw(self.flow_vector[i],np.array([self.B_R,self.B_T,self.B_N])))
+    #     self.pitchangles = np.array(self.pitchangles)
         
         
     def pw_err(self,v_phi,v_theta):

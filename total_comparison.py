@@ -81,7 +81,7 @@ def func_total_comparison(dat, period, grenz):
         plt.close('all')
         
         
-def step_plot_correction(dat, period, grenz):
+def step_plot_correction(dat, period, grenz, pixel1=3, title_extension=None):
     pixel_means, pixel_var = dat.calc_energy_means(ebins=ebins,head=-1, period=period, grenzfunktion=grenz, norm='ptmax')
     pw, pw_time = dat.calc_pw(period, window_width=5)
     year = str(period[0].year - 2000)
@@ -96,7 +96,6 @@ def step_plot_correction(dat, period, grenz):
     
     fig, ax = dat.step_plot('time', 'mean of energy [keV]', 'energy means with pitch angle correction')
     
-    pixel1 = 4
     for pixel2 in range(1,16):
         ax[pixel2].errorbar(pixel_means[0],pixel_means[pixel1],yerr=np.sqrt(pixel_var[pixel1]),marker='x',label=f'mean pixel {pixel1}')
             
@@ -106,7 +105,10 @@ def step_plot_correction(dat, period, grenz):
         ax[pixel2].errorbar(pixel_means[0],energy2_corrected,yerr=np.sqrt(pixel_var[pixel2]),marker='x',label=f'mean pixel {pixel2}')
         ax[pixel2].tick_params(axis='x',labelrotation=45)
         ax[pixel2].legend()
-    plt.savefig(f'total_comparison/step_plot_total_correction_energy_means_pixel{pixel1}_{year}_{month}_{day}.png')
+    if title_extension == None:
+        plt.savefig(f'total_comparison/step_plot_total_correction_energy_means_pixel{pixel1}_{year}_{month}_{day}.png')
+    else:
+        plt.savefig(f'total_comparison/step_plot_total_correction_energy_means_pixel{pixel1}_{year}_{month}_{day}' + title_extension + '.png')
     plt.close('all')
     
 
@@ -121,7 +123,7 @@ def step_plot_correction(dat, period, grenz):
         ax[pixel2].axhline(0,color='tab:red')
             
         ax[pixel2].tick_params(axis='x',labelrotation=45)
-    plt.savefig(f'total_comparison/step_plot_total_correction_differences_energy_pixel{pixel1}_{year}_{month}_{day}.png')
+    plt.savefig(f'different_pw_methods/step_plot_total_correction_differences_energy_pixel{pixel1}_{year}_{month}_{day}.png')
     plt.close('all')
     
     
@@ -129,13 +131,16 @@ def step_plot_correction(dat, period, grenz):
 # ### 2021-12-4 ###
 
 # dat = STEP(2021, 12, 4, mag_path = 'default', mag_frame = 'srf')
-# # dat = STEP(2021, 12, 4, rpath='data/STEP/', mag_path='data/mag/srf', mag_frame = 'srf')
-# period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
-# def grenz(t):
-#     return -0.5*t + 20
+dat = STEP(2021, 12, 4, rpath='data/STEP/', mag_path='data/mag/srf', mag_frame = 'srf')
+period =(dt.datetime(2021,12,4,13,50),dt.datetime(2021,12,4,14,30))
+def grenz(t):
+    return -0.5*t + 20
 
 # func_total_comparison(dat,period,grenz)
-# step_plot_correction(dat,period,grenz)
+step_plot_correction(dat,period,grenz)
+step_plot_correction(dat,period,grenz,title_extension='_average_pw')
+year, month, day = get_date_from_period(period)
+dat.mag.srf_ts(period,f'different_pw_methods/mag_ts_{year}_{month}_{day}.png')
 
 # ### 2022-11-12 ###
 
@@ -156,13 +161,11 @@ def step_plot_correction(dat, period, grenz):
 
 ### 2022-12-01 ###
 
-dat = STEP(2022, 12, 1, mag_path = 'default', mag_frame = 'srf')
-period = [dt.datetime(2022,12,1,6,30),dt.datetime(2022,12,1,9,30)]
-grenz = None
+# dat = STEP(2022, 12, 1, mag_path = 'default', mag_frame = 'srf')
+# period = [dt.datetime(2022,12,1,6,30),dt.datetime(2022,12,1,9,30)]
+# grenz = None
 
 
-year, month, day = get_date_from_period(period)
 
-func_total_comparison(dat,period,grenz)
-step_plot_correction(dat,period,grenz)
-dat.mag.srf_ts(period,f'total_comparison/mag_ts_{year}_{month}_{day}.png')
+# func_total_comparison(dat,period,grenz)
+# step_plot_correction(dat,period,grenz)
